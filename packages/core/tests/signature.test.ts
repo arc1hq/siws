@@ -1,32 +1,27 @@
-import { describe, it, expect, beforeAll } from 'vitest'
-import * as ed25519 from '@noble/ed25519'
-import { sha512 } from '@noble/hashes/sha2.js'
+import { describe, it, expect } from 'vitest'
+import { ed25519 } from '@noble/curves/ed25519'
 import { verifySignature } from '@/signature'
 import { SiwsMessage } from '@/message'
 import { SiwsErrorCode } from '@/errors'
 import { encodeBase58, stringToBytes } from '@/utils'
 
-beforeAll(() => {
-  ed25519.etc.sha512Sync = (...m) => sha512(ed25519.etc.concatBytes(...m))
-})
-
-async function createTestKeypair() {
+function createTestKeypair() {
   const privateKey = crypto.getRandomValues(new Uint8Array(32))
-  const publicKey = await ed25519.getPublicKeyAsync(privateKey)
+  const publicKey = ed25519.getPublicKey(privateKey)
   const address = encodeBase58(publicKey)
   return { privateKey, publicKey, address }
 }
 
-async function signMessage(message: string, privateKey: Uint8Array): Promise<string> {
+function signMessage(message: string, privateKey: Uint8Array): string {
   const messageBytes = stringToBytes(message)
-  const signature = await ed25519.signAsync(messageBytes, privateKey)
+  const signature = ed25519.sign(messageBytes, privateKey)
   return encodeBase58(signature)
 }
 
 describe('verifySignature', () => {
   describe('valid signatures', () => {
     it('verifies valid signature with message string', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -38,7 +33,7 @@ Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
-      const signature = await signMessage(messageString, privateKey)
+      const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature)
 
       expect(result.success).toBe(true)
@@ -49,7 +44,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('verifies valid signature with SiwsMessage object', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -61,7 +56,7 @@ Issued At: 2024-01-15T12:00:00Z`
         statement: 'Sign in to Example',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature)
 
       expect(result.success).toBe(true)
@@ -69,7 +64,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('verifies signature with explicit public key', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -79,14 +74,14 @@ Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
-      const signature = await signMessage(messageString, privateKey)
+      const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature, address)
 
       expect(result.success).toBe(true)
     })
 
     it('verifies signature with all optional fields', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -103,7 +98,7 @@ Issued At: 2024-01-15T12:00:00Z`
         resources: ['https://example.com/api'],
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature)
 
       expect(result.success).toBe(true)
@@ -114,7 +109,7 @@ Issued At: 2024-01-15T12:00:00Z`
 
   describe('invalid signatures', () => {
     it('rejects tampered message', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const originalMessage = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -132,7 +127,7 @@ Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
-      const signature = await signMessage(originalMessage, privateKey)
+      const signature = signMessage(originalMessage, privateKey)
       const result = await verifySignature(tamperedMessage, signature)
 
       expect(result.success).toBe(false)
@@ -141,8 +136,8 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects wrong public key', async () => {
-      const { privateKey, address } = await createTestKeypair()
-      const { address: wrongAddress } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
+      const { address: wrongAddress } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -152,7 +147,7 @@ Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
-      const signature = await signMessage(messageString, privateKey)
+      const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature, wrongAddress)
 
       expect(result.success).toBe(false)
@@ -160,7 +155,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects invalid Base58 signature', async () => {
-      const { address } = await createTestKeypair()
+      const { address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -178,7 +173,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects signature with wrong length', async () => {
-      const { address } = await createTestKeypair()
+      const { address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -197,7 +192,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects invalid Base58 public key', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -207,7 +202,7 @@ Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
-      const signature = await signMessage(messageString, privateKey)
+      const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature, 'invalid-base58!')
 
       expect(result.success).toBe(false)
@@ -215,7 +210,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects public key with wrong length', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}
@@ -225,7 +220,7 @@ Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
-      const signature = await signMessage(messageString, privateKey)
+      const signature = signMessage(messageString, privateKey)
       const shortKey = encodeBase58(new Uint8Array(16))
       const result = await verifySignature(messageString, signature, shortKey)
 
@@ -237,7 +232,7 @@ Issued At: 2024-01-15T12:00:00Z`
 
   describe('verification options', () => {
     it('validates domain when provided', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -248,7 +243,7 @@ Issued At: 2024-01-15T12:00:00Z`
         issuedAt: '2024-01-15T12:00:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature, undefined, {
         domain: 'different.com',
       })
@@ -260,7 +255,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('accepts matching domain', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -271,7 +266,7 @@ Issued At: 2024-01-15T12:00:00Z`
         issuedAt: '2024-01-15T12:00:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature, undefined, {
         domain: 'example.com',
       })
@@ -280,7 +275,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('validates nonce when provided', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -291,7 +286,7 @@ Issued At: 2024-01-15T12:00:00Z`
         issuedAt: '2024-01-15T12:00:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature, undefined, {
         nonce: 'different1234',
       })
@@ -301,7 +296,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('accepts matching nonce', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -312,7 +307,7 @@ Issued At: 2024-01-15T12:00:00Z`
         issuedAt: '2024-01-15T12:00:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature, undefined, {
         nonce: 'abcd1234',
       })
@@ -321,7 +316,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects expired message', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -333,7 +328,7 @@ Issued At: 2024-01-15T12:00:00Z`
         expirationTime: '2024-01-15T12:10:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature)
 
       expect(result.success).toBe(false)
@@ -341,7 +336,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('accepts non-expired message with custom time', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -353,7 +348,7 @@ Issued At: 2024-01-15T12:00:00Z`
         expirationTime: '2024-01-15T12:10:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature, undefined, {
         time: new Date('2024-01-15T12:05:00Z'),
       })
@@ -362,7 +357,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('rejects message not yet valid', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -374,7 +369,7 @@ Issued At: 2024-01-15T12:00:00Z`
         notBefore: '2099-01-15T12:00:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature)
 
       expect(result.success).toBe(false)
@@ -382,7 +377,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('accepts message valid with custom time', async () => {
-      const { privateKey, address } = await createTestKeypair()
+      const { privateKey, address } = createTestKeypair()
 
       const message = new SiwsMessage({
         domain: 'example.com',
@@ -394,7 +389,7 @@ Issued At: 2024-01-15T12:00:00Z`
         notBefore: '2024-01-15T12:00:00Z',
       })
 
-      const signature = await signMessage(message.toMessage(), privateKey)
+      const signature = signMessage(message.toMessage(), privateKey)
       const result = await verifySignature(message, signature, undefined, {
         time: new Date('2024-01-15T12:05:00Z'),
       })
@@ -413,7 +408,7 @@ Issued At: 2024-01-15T12:00:00Z`
     })
 
     it('preserves error cause for unexpected errors', async () => {
-      const { address } = await createTestKeypair()
+      const { address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
 ${address}

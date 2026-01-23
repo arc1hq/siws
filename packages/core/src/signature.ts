@@ -1,4 +1,4 @@
-import { verify } from '@noble/ed25519'
+import { ed25519 } from '@noble/curves/ed25519'
 import { decodeBase58, stringToBytes, isExpired, isNotYetValid } from '@/utils'
 import { SiwsError, SiwsErrorCode } from '@/errors'
 import { SiwsMessage } from '@/message'
@@ -89,7 +89,7 @@ export async function verifySignature(
     }
 
     const messageBytes = stringToBytes(messageString)
-    const isValid = await verify(signatureBytes, messageBytes, publicKeyBytes)
+    const isValid = ed25519.verify(signatureBytes, messageBytes, publicKeyBytes)
 
     if (!isValid) {
       throw new SiwsError(
