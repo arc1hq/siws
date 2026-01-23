@@ -1,6 +1,6 @@
 {
   "name": "@siws/core",
-  "version": "0.1.0-alpha.1",
+  "version": "0.1.0-alpha.2",
   "license": "MIT",
   "description": "Core library for Sign In With Solana",
   "author": "osiws contributors",
@@ -52,7 +52,6 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@noble/hashes": "^2.0.1",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "tsup": "^8.0.0",
@@ -60,7 +59,7 @@
     "vitest": "^2.0.0"
   },
   "dependencies": {
-    "@noble/ed25519": "^2.0.0",
+    "@noble/curves": "^1.8.1",
     "bs58": "^6.0.0"
   },
   "sideEffects": false,
