@@ -1,8 +1,29 @@
 {
   "name": "@siws/core",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.1",
   "license": "MIT",
   "description": "Core library for Sign In With Solana",
+  "author": "osiws contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/osiws/siws.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/osiws/siws/tree/main/packages/core#readme",
+  "bugs": {
+    "url": "https://github.com/osiws/siws/issues"
+  },
+  "keywords": [
+    "solana",
+    "authentication",
+    "sign-in",
+    "siws",
+    "wallet",
+    "web3",
+    "ed25519",
+    "signature",
+    "blockchain"
+  ],
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -41,5 +62,9 @@
   "dependencies": {
     "@noble/ed25519": "^2.0.0",
     "bs58": "^6.0.0"
+  },
+  "sideEffects": false,
+  "engines": {
+    "node": ">=18"
   }
 }
