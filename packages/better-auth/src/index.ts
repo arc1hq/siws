@@ -183,7 +183,7 @@ export function siws(options?: SiwsOptions) {
             const origin = ctx.request?.headers.get('origin') ?? ctx.request?.headers.get('host') ?? 'localhost'
             const domain = origin.replace(/^https?:\/\//, '').split('/')[0]!
 
-            const result = await verifySignature(parsedMessage, signature, address, {
+            const result = await verifySignature(message, signature, address, {
               domain,
               nonce,
             })
