@@ -1,0 +1,44 @@
+{
+  "name": "nextjs-better-auth",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:generate": "npx @better-auth/cli generate --output src/lib/auth-schema.ts --yes",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit push",
+    "setup": "docker compose up -d && drizzle-kit push"
+  },
+  "dependencies": {
+    "@siws/better-auth": "^0.1.0",
+    "@solana/wallet-adapter-base": "^0.9.23",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-react-ui": "^0.9.35",
+    "@solana/wallet-adapter-wallets": "^0.19.32",
+    "@solana/web3.js": "^1.98.0",
+    "better-auth": "^1.2.0",
+    "bs58": "^6.0.0",
+    "drizzle-orm": "^0.44.0",
+    "next": "16.1.6",
+    "pg": "^8.13.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.11.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
