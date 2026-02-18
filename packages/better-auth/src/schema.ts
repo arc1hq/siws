@@ -1,3 +1,5 @@
+import type { BetterAuthPluginDBSchema } from 'better-auth/db'
+
 /**
  * Database schema for the SIWS plugin.
  *
@@ -11,10 +13,12 @@ export const schema = {
         type: 'string',
         references: { model: 'user', field: 'id', onDelete: 'cascade' },
         required: true,
+        index: true,
       },
       address: {
         type: 'string',
         required: true,
+        index: true,
       },
       cluster: {
         type: 'string',
@@ -30,4 +34,4 @@ export const schema = {
       },
     },
   },
-} as const
+} satisfies BetterAuthPluginDBSchema
