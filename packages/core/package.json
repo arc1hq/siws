@@ -1,6 +1,6 @@
 {
   "name": "@siws/core",
-  "version": "0.1.0-alpha.2",
+  "version": "0.1.0",
   "license": "MIT",
   "description": "Core library for Sign In With Solana",
   "author": "osiws contributors",
