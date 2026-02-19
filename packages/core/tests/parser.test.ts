@@ -15,7 +15,8 @@ Sign in to Example
 URI: https://example.com/auth
 Version: 1
 Nonce: k8sj2n4b
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
@@ -26,10 +27,10 @@ Issued At: 2024-01-15T12:00:00Z`
       expect(result.version).toBe('1')
       expect(result.nonce).toBe('k8sj2n4b')
       expect(result.issuedAt).toBe('2024-01-15T12:00:00Z')
+      expect(result.cluster).toBe('mainnet-beta')
       expect(result.expirationTime).toBeUndefined()
       expect(result.notBefore).toBeUndefined()
       expect(result.requestId).toBeUndefined()
-      expect(result.cluster).toBeUndefined()
       expect(result.resources).toBeUndefined()
     })
 
@@ -40,7 +41,8 @@ ${VALID_ADDRESS}
 URI: https://example.com/auth
 Version: 1
 Nonce: k8sj2n4b
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
@@ -51,6 +53,7 @@ Issued At: 2024-01-15T12:00:00Z`
       expect(result.version).toBe('1')
       expect(result.nonce).toBe('k8sj2n4b')
       expect(result.issuedAt).toBe('2024-01-15T12:00:00Z')
+      expect(result.cluster).toBe('mainnet-beta')
     })
 
     it('parses complete message with all fields', () => {
@@ -97,7 +100,8 @@ ${VALID_ADDRESS}
 URI: http://localhost:3000/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
@@ -142,6 +146,7 @@ URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta
 Resources:
 - https://example.com/api/resource`
 
@@ -157,7 +162,8 @@ ${VALID_ADDRESS}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00.123Z`
+Issued At: 2024-01-15T12:00:00.123Z
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
@@ -263,6 +269,25 @@ Issued At: 2024-01-15T12:00:00Z`
       expect(() => parseMessage(message)).toThrow('Statement must be a single line')
     })
 
+    it('throws on missing cluster', () => {
+      const message = `example.com wants you to sign in with your Solana account:
+${VALID_ADDRESS}
+
+URI: https://example.com/auth
+Version: 1
+Nonce: abcd1234
+Issued At: 2024-01-15T12:00:00Z`
+
+      expect(() => parseMessage(message)).toThrow(SiwsError)
+      try {
+        parseMessage(message)
+      } catch (error) {
+        expect(error).toBeInstanceOf(SiwsError)
+        expect((error as SiwsError).code).toBe(SiwsErrorCode.MISSING_REQUIRED_FIELD)
+        expect((error as SiwsError).message).toContain('Cluster')
+      }
+    })
+
     it('throws on invalid cluster', () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
@@ -290,6 +315,7 @@ URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta
 Resources:
 https://example.com/api/resource`
 
@@ -307,6 +333,7 @@ URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta
 Resources:`
 
       const result = parseMessage(message)
@@ -323,7 +350,8 @@ Sign in to access $100 worth of tokens! (Limited time offer)
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
@@ -338,7 +366,8 @@ URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z
-Request ID: req-123_abc.456`
+Request ID: req-123_abc.456
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
@@ -352,7 +381,8 @@ ${VALID_ADDRESS}
 URI: https://example.com/auth
 Nonce: abcd1234
 Version: 1
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 

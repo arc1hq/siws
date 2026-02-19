@@ -144,9 +144,7 @@ export function validateAllFields(fields: SiwsMessageFields): void {
   if (fields.requestId !== undefined) {
     validateRequestId(fields.requestId)
   }
-  if (fields.cluster !== undefined) {
-    validateCluster(fields.cluster)
-  }
+  validateCluster(fields.cluster)
   if (fields.resources !== undefined) {
     fields.resources.forEach(validateResource)
   }

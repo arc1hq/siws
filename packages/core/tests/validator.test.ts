@@ -419,6 +419,7 @@ describe('validateAllFields', () => {
     version: '1',
     nonce: 'abcd1234',
     issuedAt: '2024-01-15T12:00:00Z',
+    cluster: 'mainnet-beta' as const,
   }
 
   it('accepts valid required fields only', () => {
@@ -477,7 +478,12 @@ describe('validateAllFields', () => {
     expect(() => validateAllFields({ ...validFields, requestId: 'req\n123' })).toThrow(SiwsError)
   })
 
-  it('rejects invalid optional cluster', () => {
+  it('rejects missing cluster', () => {
+    const { cluster: _, ...fieldsWithoutCluster } = validFields
+    expect(() => validateAllFields({ ...fieldsWithoutCluster } as any)).toThrow(SiwsError)
+  })
+
+  it('rejects invalid cluster', () => {
     expect(() => validateAllFields({ ...validFields, cluster: 'invalid' as any })).toThrow(SiwsError)
   })
 

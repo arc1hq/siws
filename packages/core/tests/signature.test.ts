@@ -31,7 +31,8 @@ Sign in to Example
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature)
@@ -53,6 +54,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in to Example',
       })
 
@@ -72,7 +74,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature, address)
@@ -117,7 +120,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const tamperedMessage = `malicious.com wants you to sign in with your Solana account:
 ${address}
@@ -125,7 +129,8 @@ ${address}
 URI: https://malicious.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const signature = signMessage(originalMessage, privateKey)
       const result = await verifySignature(tamperedMessage, signature)
@@ -145,7 +150,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature, wrongAddress)
@@ -163,7 +169,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const result = await verifySignature(messageString, 'not-valid-base58!')
 
@@ -181,7 +188,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const shortSignature = encodeBase58(new Uint8Array(32))
       const result = await verifySignature(messageString, shortSignature)
@@ -200,7 +208,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const signature = signMessage(messageString, privateKey)
       const result = await verifySignature(messageString, signature, 'invalid-base58!')
@@ -218,7 +227,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const signature = signMessage(messageString, privateKey)
       const shortKey = encodeBase58(new Uint8Array(16))
@@ -241,6 +251,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       const signature = signMessage(message.toMessage(), privateKey)
@@ -264,6 +275,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       const signature = signMessage(message.toMessage(), privateKey)
@@ -284,6 +296,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       const signature = signMessage(message.toMessage(), privateKey)
@@ -305,6 +318,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       const signature = signMessage(message.toMessage(), privateKey)
@@ -325,6 +339,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         expirationTime: '2024-01-15T12:10:00Z',
       })
 
@@ -345,6 +360,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         expirationTime: '2024-01-15T12:10:00Z',
       })
 
@@ -366,6 +382,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         notBefore: '2099-01-15T12:00:00Z',
       })
 
@@ -386,6 +403,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         notBefore: '2024-01-15T12:00:00Z',
       })
 
@@ -416,7 +434,8 @@ ${address}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const validLengthInvalidSig = encodeBase58(new Uint8Array(64))
       const result = await verifySignature(messageString, validLengthInvalidSig)

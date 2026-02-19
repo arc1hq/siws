@@ -42,6 +42,7 @@ const message = new SiwsMessageBuilder()
   .uri('https://example.com/login')
   .nonce(nonce)
   .issuedAt(new Date())
+  .cluster('mainnet-beta')
   .statement('Sign in to Example App')
   .build();
 
@@ -78,7 +79,7 @@ const message = new SiwsMessageBuilder()
   .expirationTime(new Date())      // Optional: Message expiration
   .notBefore(new Date())           // Optional: Earliest valid time
   .requestId('req-123')            // Optional: Request identifier
-  .cluster('mainnet-beta')         // Optional: Solana cluster
+  .cluster('mainnet-beta')         // Required: Solana cluster
   .resources(['https://...'])      // Optional: Resource URIs
   .addResource('https://...')      // Optional: Add single resource
   .build();                        // Returns SiwsMessage
@@ -100,7 +101,7 @@ message.version     // string (always "1")
 message.nonce       // string
 message.issuedAt    // string (ISO 8601)
 message.statement   // string | undefined
-message.cluster     // 'mainnet-beta' | 'devnet' | 'testnet' | undefined
+message.cluster     // 'mainnet-beta' | 'devnet' | 'testnet'
 // ... other optional fields
 
 // Serialize back to string
@@ -200,7 +201,7 @@ interface SiwsMessageFields {
   expirationTime?: string;
   notBefore?: string;
   requestId?: string;
-  cluster?: Cluster;
+  cluster: Cluster;
   resources?: string[];
 }
 ```

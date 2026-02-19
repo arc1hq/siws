@@ -72,6 +72,7 @@ Resources:
 | `version` | SIWS specification version | `1` |
 | `nonce` | Randomized token for replay protection | Alphanumeric, ≥8 characters |
 | `issuedAt` | Message creation timestamp | ISO 8601 datetime |
+| `cluster` | Solana network identifier | `mainnet-beta` \| `devnet` \| `testnet` |
 
 ### Optional Fields
 
@@ -81,7 +82,6 @@ Resources:
 | `expirationTime` | Message expiration timestamp | ISO 8601 datetime |
 | `notBefore` | Message validity start timestamp | ISO 8601 datetime |
 | `requestId` | Application-specific request identifier | String |
-| `cluster` | Solana network identifier | `mainnet-beta` \| `devnet` \| `testnet` |
 | `resources` | Resources being authorized | Array of RFC 3986 URIs |
 
 ### Field Definitions
@@ -133,7 +133,7 @@ The `notBefore` is OPTIONAL. If present, relying parties MUST reject messages wh
 
 #### cluster
 
-The `cluster` is OPTIONAL. Valid values are `mainnet-beta`, `devnet`, and `testnet`. Relying parties MAY use this to prevent cross-network replay.
+The `cluster` is REQUIRED. Valid values are `mainnet-beta`, `devnet`, and `testnet`. Relying parties MUST validate the cluster value to prevent cross-cluster replay attacks.
 
 #### resources
 
@@ -168,7 +168,7 @@ field-lines     = uri-field LF version-field LF nonce-field LF
                   [ expiration-field LF ]
                   [ not-before-field LF ]
                   [ request-id-field LF ]
-                  [ cluster-field LF ]
+                  cluster-field LF
                   [ resources-field ]
 
 uri-field       = "URI: " uri
@@ -271,6 +271,7 @@ URI: https://example.com/auth
 Version: 1
 Nonce: k8sj2n4b
 Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta
 ```
 
 **Parsed Fields**:
@@ -282,7 +283,8 @@ Issued At: 2024-01-15T12:00:00Z
   "uri": "https://example.com/auth",
   "version": "1",
   "nonce": "k8sj2n4b",
-  "issuedAt": "2024-01-15T12:00:00Z"
+  "issuedAt": "2024-01-15T12:00:00Z",
+  "cluster": "mainnet-beta"
 }
 ```
 

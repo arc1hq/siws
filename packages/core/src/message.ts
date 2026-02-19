@@ -16,7 +16,7 @@ export class SiwsMessage {
   readonly expirationTime?: string
   readonly notBefore?: string
   readonly requestId?: string
-  readonly cluster?: Cluster
+  readonly cluster: Cluster
   readonly resources?: string[]
 
   constructor(fields: SiwsMessageFields) {
@@ -70,9 +70,7 @@ export class SiwsMessage {
       lines.push(`Request ID: ${this.requestId}`)
     }
 
-    if (this.cluster) {
-      lines.push(`Cluster: ${this.cluster}`)
-    }
+    lines.push(`Cluster: ${this.cluster}`)
 
     if (this.resources && this.resources.length > 0) {
       lines.push('Resources:')
@@ -177,6 +175,7 @@ export class SiwsMessageBuilder {
     if (!this.fields.uri) missing.push('uri')
     if (!this.fields.nonce) missing.push('nonce')
     if (!this.fields.issuedAt) missing.push('issuedAt')
+    if (!this.fields.cluster) missing.push('cluster')
 
     if (missing.length > 0) {
       throw new SiwsError(

@@ -14,6 +14,7 @@ describe('SiwsMessage', () => {
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       expect(message.domain).toBe('example.com')
@@ -22,6 +23,7 @@ describe('SiwsMessage', () => {
       expect(message.version).toBe('1')
       expect(message.nonce).toBe('abcd1234')
       expect(message.issuedAt).toBe('2024-01-15T12:00:00Z')
+      expect(message.cluster).toBe('mainnet-beta')
     })
 
     it('creates message with all fields', () => {
@@ -32,11 +34,11 @@ describe('SiwsMessage', () => {
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in to Example',
         expirationTime: '2024-01-15T12:10:00Z',
         notBefore: '2024-01-15T12:00:00Z',
         requestId: 'req_123',
-        cluster: 'mainnet-beta',
         resources: ['https://example.com/api'],
       })
 
@@ -57,6 +59,7 @@ describe('SiwsMessage', () => {
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         resources,
       })
 
@@ -72,6 +75,7 @@ describe('SiwsMessage', () => {
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })).toThrow(SiwsError)
     })
 
@@ -83,6 +87,7 @@ describe('SiwsMessage', () => {
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })).toThrow(SiwsError)
     })
   })
@@ -97,7 +102,8 @@ Sign in to Example
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
 
       const message = SiwsMessage.parse(messageString)
 
@@ -120,6 +126,7 @@ Issued At: 2024-01-15T12:00:00Z`
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       const result = message.toMessage()
@@ -130,7 +137,8 @@ ${VALID_ADDRESS}
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`)
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`)
     })
 
     it('serializes message with statement', () => {
@@ -141,6 +149,7 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in to Example',
       })
 
@@ -155,10 +164,11 @@ Sign in to Example
 URI: https://example.com/auth
 Version: 1
 Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z`)
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`)
     })
 
-    it('serializes message with all optional fields', () => {
+    it('serializes message with all fields', () => {
       const message = new SiwsMessage({
         domain: 'example.com',
         address: VALID_ADDRESS,
@@ -166,11 +176,11 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in to Example',
         expirationTime: '2024-01-15T12:10:00Z',
         notBefore: '2024-01-15T12:00:00Z',
         requestId: 'req_123',
-        cluster: 'mainnet-beta',
         resources: ['https://example.com/api/a', 'https://example.com/api/b'],
       })
 
@@ -193,9 +203,9 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in to Example',
         expirationTime: '2024-01-15T12:10:00Z',
-        cluster: 'mainnet-beta',
         resources: ['https://example.com/api'],
       })
 
@@ -222,6 +232,7 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
       })
 
       const serialized = original.toMessage()
@@ -241,6 +252,7 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in',
         resources: ['https://example.com/api'],
       })
@@ -254,11 +266,11 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         statement: 'Sign in',
         expirationTime: undefined,
         notBefore: undefined,
         requestId: undefined,
-        cluster: undefined,
         resources: ['https://example.com/api'],
       })
     })
@@ -271,6 +283,7 @@ Issued At: 2024-01-15T12:00:00Z`)
         version: '1',
         nonce: 'abcd1234',
         issuedAt: '2024-01-15T12:00:00Z',
+        cluster: 'mainnet-beta',
         resources: ['https://example.com/api'],
       })
 
@@ -291,6 +304,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .build()
 
       expect(message.domain).toBe('example.com')
@@ -299,6 +313,7 @@ describe('SiwsMessageBuilder', () => {
       expect(message.version).toBe('1')
       expect(message.nonce).toBe('abcd1234')
       expect(message.issuedAt).toBe('2024-01-15T12:00:00Z')
+      expect(message.cluster).toBe('mainnet-beta')
     })
 
     it('builds message with all optional fields', () => {
@@ -308,6 +323,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .statement('Sign in to Example')
         .expirationTime('2024-01-15T12:10:00Z')
         .notBefore('2024-01-15T12:00:00Z')
@@ -332,6 +348,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt(date)
+        .cluster('mainnet-beta')
         .build()
 
       expect(message.issuedAt).toBe('2024-01-15T12:00:00.000Z')
@@ -345,6 +362,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .expirationTime(date)
         .build()
 
@@ -359,6 +377,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .notBefore(date)
         .build()
 
@@ -372,6 +391,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .addResource('https://example.com/api/a')
         .addResource('https://example.com/api/b')
         .build()
@@ -391,6 +411,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
 
       expect(result).toBe(builder)
     })
@@ -403,6 +424,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .build()
       ).toThrow(SiwsError)
 
@@ -412,6 +434,7 @@ describe('SiwsMessageBuilder', () => {
           .uri('https://example.com/auth')
           .nonce('abcd1234')
           .issuedAt('2024-01-15T12:00:00Z')
+          .cluster('mainnet-beta')
           .build()
       } catch (error) {
         expect((error as SiwsError).code).toBe(SiwsErrorCode.MISSING_REQUIRED_FIELD)
@@ -425,6 +448,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .build()
       ).toThrow(SiwsError)
     })
@@ -435,6 +459,7 @@ describe('SiwsMessageBuilder', () => {
         .address(VALID_ADDRESS)
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .build()
       ).toThrow(SiwsError)
     })
@@ -445,6 +470,7 @@ describe('SiwsMessageBuilder', () => {
         .address(VALID_ADDRESS)
         .uri('https://example.com/auth')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .build()
       ).toThrow(SiwsError)
     })
@@ -455,8 +481,33 @@ describe('SiwsMessageBuilder', () => {
         .address(VALID_ADDRESS)
         .uri('https://example.com/auth')
         .nonce('abcd1234')
+        .cluster('mainnet-beta')
         .build()
       ).toThrow(SiwsError)
+    })
+
+    it('throws when cluster is missing', () => {
+      expect(() => new SiwsMessageBuilder()
+        .domain('example.com')
+        .address(VALID_ADDRESS)
+        .uri('https://example.com/auth')
+        .nonce('abcd1234')
+        .issuedAt('2024-01-15T12:00:00Z')
+        .build()
+      ).toThrow(SiwsError)
+
+      try {
+        new SiwsMessageBuilder()
+          .domain('example.com')
+          .address(VALID_ADDRESS)
+          .uri('https://example.com/auth')
+          .nonce('abcd1234')
+          .issuedAt('2024-01-15T12:00:00Z')
+          .build()
+      } catch (error) {
+        expect((error as SiwsError).code).toBe(SiwsErrorCode.MISSING_REQUIRED_FIELD)
+        expect((error as SiwsError).message).toContain('cluster')
+      }
     })
 
     it('lists all missing fields in error', () => {
@@ -469,6 +520,7 @@ describe('SiwsMessageBuilder', () => {
         expect(message).toContain('uri')
         expect(message).toContain('nonce')
         expect(message).toContain('issuedAt')
+        expect(message).toContain('cluster')
       }
     })
 
@@ -479,6 +531,7 @@ describe('SiwsMessageBuilder', () => {
         .uri('https://example.com/auth')
         .nonce('abcd1234')
         .issuedAt('2024-01-15T12:00:00Z')
+        .cluster('mainnet-beta')
         .build()
       ).toThrow(SiwsError)
     })

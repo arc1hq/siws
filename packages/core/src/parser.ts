@@ -125,9 +125,12 @@ function parseFieldLines(lines: string[]): Map<string, string> {
   return fields
 }
 
-function parseCluster(value: string | undefined): Cluster | undefined {
+function parseCluster(value: string | undefined): Cluster {
   if (value === undefined) {
-    return undefined
+    throw new SiwsError(
+      SiwsErrorCode.MISSING_REQUIRED_FIELD,
+      'Missing required field: Cluster'
+    )
   }
   if (CLUSTERS.includes(value as Cluster)) {
     return value as Cluster

@@ -13,7 +13,7 @@ export interface SiwsMessageFields {
   expirationTime?: string
   notBefore?: string
   requestId?: string
-  cluster?: Cluster
+  cluster: Cluster
   resources?: string[]
 }
 
