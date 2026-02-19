@@ -15,7 +15,7 @@
     "setup": "docker compose up -d && drizzle-kit push"
   },
   "dependencies": {
-    "@siws/better-auth": "^0.1.0",
+    "@siws/better-auth": "^0.1.1",
     "@solana/wallet-adapter-base": "^0.9.23",
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
