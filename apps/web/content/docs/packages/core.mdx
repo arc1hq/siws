@@ -1,0 +1,201 @@
+---
+title: "@siws/core"
+excerpt: Core library for Sign In With Solana -- message building, parsing, and Ed25519 signature verification.
+rank: 0
+---
+
+The core package implements the [SIWS specification](/docs/specification) with message construction, parsing, validation, and cryptographic verification.
+
+## SiwsMessage
+
+Immutable representation of a SIWS message. Validates all fields on construction.
+
+```ts
+import { SiwsMessage } from '@siws/core'
+
+// Create from fields
+const message = new SiwsMessage({
+  domain: 'example.com',
+  address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+  uri: 'https://example.com/auth',
+  version: '1',
+  nonce: 'k8sj2n4b',
+  issuedAt: '2024-01-15T12:00:00Z',
+  cluster: 'mainnet-beta',
+  statement: 'Sign in to Example',
+})
+
+// Parse from string
+const parsed = SiwsMessage.parse(rawMessageString)
+
+// Serialize to string
+const str = message.toMessage()
+
+// Extract fields
+const fields = message.toFields()
+```
+
+### Methods
+
+| Method | Returns | Description |
+|--------|---------|-------------|
+| `static parse(message: string)` | `SiwsMessage` | Parse a raw message string into a validated `SiwsMessage` |
+| `toMessage()` | `string` | Serialize to the canonical message string format |
+| `toFields()` | `SiwsMessageFields` | Extract all fields as a plain object |
+
+## SiwsMessageBuilder
+
+Fluent builder for constructing `SiwsMessage` instances. Accepts `Date` objects for timestamp fields.
+
+```ts
+import { SiwsMessageBuilder, generateNonce } from '@siws/core'
+
+const message = new SiwsMessageBuilder()
+  .domain('example.com')
+  .address(walletAddress)
+  .uri('https://example.com/auth')
+  .nonce(generateNonce())
+  .issuedAt(new Date())
+  .expirationTime(new Date(Date.now() + 10 * 60 * 1000))
+  .cluster('mainnet-beta')
+  .statement('Sign in to Example')
+  .addResource('https://example.com/api/profile')
+  .build()
+```
+
+### Builder Methods
+
+| Method | Parameter | Description |
+|--------|-----------|-------------|
+| `domain(domain)` | `string` | Set the requesting domain |
+| `address(address)` | `string` | Set the Solana wallet address |
+| `uri(uri)` | `string` | Set the authentication URI |
+| `nonce(nonce)` | `string` | Set the replay-protection nonce |
+| `issuedAt(issuedAt)` | `string \| Date` | Set the message creation time |
+| `statement(statement)` | `string` | Set the human-readable statement |
+| `expirationTime(time)` | `string \| Date` | Set message expiration |
+| `notBefore(time)` | `string \| Date` | Set earliest validity time |
+| `requestId(id)` | `string` | Set application-specific request ID |
+| `cluster(cluster)` | `Cluster` | Set the Solana cluster |
+| `resources(resources)` | `string[]` | Set resource URIs |
+| `addResource(resource)` | `string` | Append a single resource URI |
+| `build()` | -- | Build and validate, returns `SiwsMessage` |
+
+## verifySignature
+
+Verify an Ed25519 signature against a SIWS message.
+
+```ts
+import { verifySignature } from '@siws/core'
+
+const result = await verifySignature(
+  messageString,  // raw message string or SiwsMessage
+  signature,      // Base58-encoded Ed25519 signature
+  publicKey,      // optional -- defaults to address in message
+  {
+    domain: 'example.com',  // optional domain check
+    nonce: expectedNonce,    // optional nonce check
+    time: new Date(),        // optional time override
+  }
+)
+
+if (result.success) {
+  console.log('Authenticated:', result.data.address)
+} else {
+  console.error('Failed:', result.error.code, result.error.message)
+}
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `message` | `string \| SiwsMessage` | The message to verify |
+| `signature` | `string` | Base58-encoded Ed25519 signature (64 bytes) |
+| `publicKey` | `string?` | Base58-encoded public key. Defaults to the `address` field in the message |
+| `options` | `VerificationOptions?` | Optional domain, nonce, and time checks |
+
+### VerificationResult
+
+```ts
+interface VerificationResult {
+  success: boolean
+  data?: SiwsMessageFields  // parsed fields on success
+  error?: SiwsError          // error details on failure
+}
+```
+
+## generateNonce
+
+Generate a cryptographically random Base58 nonce.
+
+```ts
+import { generateNonce } from '@siws/core'
+
+const nonce = generateNonce()     // 16 characters (default)
+const long = generateNonce(32)    // 32 characters
+```
+
+Uses `crypto.getRandomValues` with rejection sampling for uniform distribution across the Base58 alphabet.
+
+## Types
+
+### SiwsMessageFields
+
+```ts
+interface SiwsMessageFields {
+  domain: string
+  address: string
+  uri: string
+  version: string         // always '1'
+  nonce: string
+  issuedAt: string        // ISO 8601
+  cluster: Cluster
+  statement?: string
+  expirationTime?: string // ISO 8601
+  notBefore?: string      // ISO 8601
+  requestId?: string
+  resources?: string[]
+}
+```
+
+### Cluster
+
+```ts
+type Cluster = 'mainnet-beta' | 'devnet' | 'testnet'
+```
+
+### SiwsError
+
+```ts
+class SiwsError extends Error {
+  readonly code: SiwsErrorCode
+  readonly expected?: string
+  readonly received?: string
+}
+```
+
+### SiwsErrorCode
+
+All error codes:
+
+| Code | When |
+|------|------|
+| `INVALID_DOMAIN` | Domain format validation fails |
+| `INVALID_ADDRESS` | Not a valid Base58 Solana address |
+| `INVALID_URI` | URI format validation fails |
+| `INVALID_VERSION` | Version is not `'1'` |
+| `INVALID_NONCE` | Nonce too short or not alphanumeric |
+| `INVALID_TIMESTAMP` | Not a valid ISO 8601 datetime |
+| `INVALID_STATEMENT` | Contains newlines or non-printable chars |
+| `INVALID_CLUSTER` | Not a recognized cluster value |
+| `INVALID_RESOURCE` | Resource URI format invalid |
+| `INVALID_SIGNATURE` | Signature is not valid Base58 or wrong length |
+| `INVALID_REQUEST_ID` | Contains non-printable characters |
+| `MESSAGE_EXPIRED` | Current time exceeds `expirationTime` |
+| `MESSAGE_NOT_YET_VALID` | Current time precedes `notBefore` |
+| `DOMAIN_MISMATCH` | Message domain doesn't match expected |
+| `NONCE_MISMATCH` | Message nonce doesn't match expected |
+| `PARSE_ERROR` | Message string cannot be parsed |
+| `MISSING_REQUIRED_FIELD` | A required field is missing |
+| `SIGNATURE_VERIFICATION_FAILED` | Ed25519 verification returned false |

@@ -1,0 +1,196 @@
+---
+title: "@siws/better-auth"
+excerpt: Drop-in Sign In With Solana plugin for better-auth with server and client support, automatic nonce management, and session handling.
+rank: 1
+---
+
+The `@siws/better-auth` package provides a [better-auth](https://www.better-auth.com/) plugin that handles the complete Solana wallet authentication flow -- nonce generation, message building, signature verification, user management, and session creation.
+
+## Server Plugin
+
+```ts title="auth.ts"
+import { betterAuth } from 'better-auth'
+import { siws } from '@siws/better-auth'
+
+export const auth = betterAuth({
+  // ... your database and other config
+  plugins: [
+    siws({
+      statement: 'Sign in to MyApp',
+      expirationTime: 600, // 10 minutes
+      cluster: 'mainnet-beta',
+    }),
+  ],
+})
+```
+
+### Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `statement` | `string?` | -- | Human-readable statement shown to users when signing |
+| `expirationTime` | `number?` | `300` | Message expiration in seconds |
+| `cluster` | `Cluster?` | `'mainnet-beta'` | Default Solana cluster |
+| `resources` | `string[]?` | -- | Resource URIs to include in messages |
+| `emailDomainName` | `string?` | `'siws.local'` | Domain for synthetic emails in anonymous mode |
+| `anonymous` | `boolean?` | `true` | Allow sign-up without email (generates synthetic email) |
+| `schema` | `object?` | -- | Custom schema options for the `solanaAddress` table |
+
+## Client Plugin
+
+```ts title="auth-client.ts"
+import { createAuthClient } from 'better-auth/client'
+import { siwsClient } from '@siws/better-auth/client'
+
+export const auth = createAuthClient({
+  plugins: [siwsClient()],
+})
+```
+
+### Client Methods
+
+#### `auth.siws.getNonce(input)`
+
+Request a nonce and pre-built SIWS message for signing.
+
+```ts
+const { nonce, message } = await auth.siws.getNonce({
+  address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
+  cluster: 'mainnet-beta', // optional, uses server default
+})
+```
+
+**Input:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `address` | `string` | Yes | Solana wallet address |
+| `cluster` | `Cluster?` | No | Solana cluster override |
+
+**Response:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `nonce` | `string` | Server-generated nonce |
+| `message` | `string` | Complete SIWS message ready for signing |
+
+#### `auth.siws.verify(input)`
+
+Verify a signed message and create a session.
+
+```ts
+const result = await auth.siws.verify({
+  message,
+  signature: bs58.encode(signatureBytes),
+  address: walletAddress,
+  cluster: 'mainnet-beta',
+  email: 'user@example.com', // optional
+})
+
+if (result.success) {
+  // User is authenticated, session cookie is set
+  console.log(result.user)
+}
+```
+
+**Input:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `message` | `string` | Yes | The SIWS message that was signed |
+| `signature` | `string` | Yes | Base58-encoded Ed25519 signature |
+| `address` | `string` | Yes | Solana wallet address |
+| `cluster` | `Cluster?` | No | Solana cluster override |
+| `email` | `string?` | No* | User email (*required if `anonymous: false`) |
+
+**Response:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | `boolean` | Whether verification succeeded |
+| `token` | `string?` | Session token |
+| `user` | `object?` | `{ id, address, cluster }` |
+
+## Endpoints
+
+The plugin registers two API endpoints:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/auth/siws/nonce` | Generate nonce and SIWS message |
+| `POST` | `/api/auth/siws/verify` | Verify signature and create session |
+
+## Database Schema
+
+The plugin creates a `solanaAddress` table to store linked wallet addresses:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | `string` | Primary key |
+| `userId` | `string` | Foreign key to `user.id` (cascade delete) |
+| `address` | `string` | Solana wallet address (indexed) |
+| `cluster` | `string` | Solana cluster |
+| `isPrimary` | `boolean` | Whether this is the primary address |
+| `createdAt` | `date` | When the address was linked |
+
+Run your better-auth database migrations to create this table.
+
+## Full Example
+
+```ts title="auth.ts"
+import { betterAuth } from 'better-auth'
+import { siws } from '@siws/better-auth'
+
+export const auth = betterAuth({
+  database: {
+    // your database config
+  },
+  plugins: [
+    siws({
+      statement: 'Sign in to MyApp',
+      expirationTime: 300,
+      cluster: 'mainnet-beta',
+    }),
+  ],
+})
+```
+
+```ts title="auth-client.ts"
+import { createAuthClient } from 'better-auth/client'
+import { siwsClient } from '@siws/better-auth/client'
+
+export const auth = createAuthClient({
+  plugins: [siwsClient()],
+})
+```
+
+```tsx title="connect-wallet.tsx"
+import { auth } from './auth-client'
+import bs58 from 'bs58'
+
+async function signInWithSolana(wallet: { publicKey: PublicKey; signMessage: (msg: Uint8Array) => Promise<Uint8Array> }) {
+  const address = wallet.publicKey.toBase58()
+
+  // 1. Get nonce and message from server
+  const { message } = await auth.siws.getNonce({
+    address,
+    cluster: 'mainnet-beta',
+  })
+
+  // 2. Sign with wallet
+  const signatureBytes = await wallet.signMessage(
+    new TextEncoder().encode(message)
+  )
+
+  // 3. Verify and create session
+  const result = await auth.siws.verify({
+    message,
+    signature: bs58.encode(signatureBytes),
+    address,
+  })
+
+  if (result.success) {
+    console.log('Signed in as:', result.user)
+  }
+}
+```
