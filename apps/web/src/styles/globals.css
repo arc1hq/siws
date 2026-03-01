@@ -1,0 +1,138 @@
+@import "@siws/ui/base.css";
+@source "../../../../packages/ui/src";
+
+@theme inline {
+  --color-grid: var(--border);
+  --color-doc-background: var(--doc-background);
+  --color-doc-foreground: var(--doc-foreground);
+}
+
+:root {
+  --header-height: 3.5rem;
+  --gutter: 0rem;
+  --sidebar-width: 220px;
+  --doc-background: oklch(0.98 0 0);
+  --doc-foreground: oklch(0.1445 0 0);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --sidebar-width: 250px;
+    --gutter: 0.25rem;
+  }
+}
+
+.dark {
+  --doc-background: oklch(0.2 0 0);
+  --doc-foreground: oklch(0.9848 0 0);
+}
+
+@layer base {
+  body {
+    @apply bg-doc-background dark:bg-background;
+  }
+}
+
+@utility border-grid {
+  @apply border-border/80 dark:border-border border-dashed;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+
+  &::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
+@utility step {
+  counter-increment: step;
+
+  &:before {
+    @apply absolute size-6 bg-foreground text-background rounded-full font-mono font-medium text-center text-base inline-flex items-center justify-center -indent-px;
+    @apply ml-[-45px] mt-[2px];
+    content: counter(step);
+  }
+}
+
+/* ── code block ── */
+
+[data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+}
+
+.dark [data-rehype-pretty-code-figure] code span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+}
+
+[data-rehype-pretty-code-figure] {
+  @apply rounded-md my-3;
+}
+
+[data-rehype-pretty-code-figure] code {
+  @apply grid min-w-full wrap-break-word border-none bg-transparent text-sm rounded-md;
+  box-decoration-break: clone;
+}
+
+[data-rehype-pretty-code-figure] .line {
+  @apply py-1.5;
+}
+
+[data-rehype-pretty-code-figure] code[data-line-numbers] {
+  @apply min-w-full py-2;
+}
+
+[data-rehype-pretty-code-figure] code[data-line-numbers] [data-line] {
+  @apply flex items-center pl-3;
+}
+
+[data-rehype-pretty-code-figure] code:not([data-line-numbers]) [data-line] {
+  @apply px-1.5;
+}
+
+[data-rehype-pretty-code-figure] code:not([data-line-numbers]) {
+  @apply py-2;
+}
+
+[data-rehype-pretty-code-figure] code[data-line-numbers] [data-line-number] {
+  @apply mr-3 pr-1 inline-flex w-7 shrink-0 justify-end text-right text-gray-400 dark:text-gray-500;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background-color: var(--shiki-light-bg, inherit);
+}
+
+.dark [data-rehype-pretty-code-figure] code[data-line-numbers] [data-line-number] {
+  background-color: var(--shiki-dark-bg, var(--shiki-light-bg, inherit));
+}
+
+[data-rehype-pretty-code-figure] .line--highlighted {
+  @apply bg-slate-300/10;
+}
+
+[data-rehype-pretty-code-figure] .line-highlighted span {
+  @apply relative;
+}
+
+[data-highlighted-line] {
+  @apply bg-slate-300/10;
+}
+
+[data-rehype-pretty-code-figure] .word--highlighted {
+  @apply rounded-md bg-slate-300/10 p-1;
+}
+
+[data-rehype-pretty-code-title] {
+  @apply hidden;
+}
+
+.mdx>.steps:first-child>h3:first-child {
+  @apply mt-0;
+}
+
+.steps>h3 {
+  @apply mt-8 mb-4 text-base font-semibold;
+}
