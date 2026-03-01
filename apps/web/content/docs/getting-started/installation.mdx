@@ -1,0 +1,111 @@
+---
+title: Installation
+excerpt: Install @siws/core and @siws/better-auth to add Solana wallet authentication to your application.
+rank: 2
+---
+
+## Install @siws/core
+
+The core package provides message building, parsing, and Ed25519 signature verification.
+
+```bash title="npm"
+npm install @siws/core
+```
+
+```bash title="pnpm"
+pnpm add @siws/core
+```
+
+```bash title="yarn"
+yarn add @siws/core
+```
+
+### Requirements
+
+- Node.js >= 18 (for `crypto.getRandomValues`)
+- No native dependencies -- uses `@noble/curves` for Ed25519 and `bs58` for Base58
+
+### Quick Usage
+
+```ts
+import { SiwsMessageBuilder, generateNonce, verifySignature } from '@siws/core'
+
+// Build a message
+const message = new SiwsMessageBuilder()
+  .domain('example.com')
+  .address('7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU')
+  .uri('https://example.com/auth')
+  .nonce(generateNonce())
+  .issuedAt(new Date())
+  .cluster('mainnet-beta')
+  .build()
+
+const messageString = message.toMessage()
+
+// Verify a signature
+const result = await verifySignature(messageString, signature)
+```
+
+---
+
+## Install @siws/better-auth
+
+The better-auth plugin provides batteries-included Solana wallet authentication with automatic nonce management, user creation, and session handling.
+
+```bash title="npm"
+npm install @siws/better-auth
+```
+
+```bash title="pnpm"
+pnpm add @siws/better-auth
+```
+
+```bash title="yarn"
+yarn add @siws/better-auth
+```
+
+### Peer Dependencies
+
+- `better-auth` >= 1.0.0
+
+### Quick Setup
+
+**Server:**
+
+```ts title="auth.ts"
+import { betterAuth } from 'better-auth'
+import { siws } from '@siws/better-auth'
+
+export const auth = betterAuth({
+  plugins: [
+    siws({
+      statement: 'Sign in to MyApp',
+    }),
+  ],
+})
+```
+
+**Client:**
+
+```ts title="auth-client.ts"
+import { createAuthClient } from 'better-auth/client'
+import { siwsClient } from '@siws/better-auth/client'
+
+export const auth = createAuthClient({
+  plugins: [siwsClient()],
+})
+
+// Get nonce and message
+const { nonce, message } = await auth.siws.getNonce({
+  address: walletAddress,
+  cluster: 'mainnet-beta',
+})
+
+// Sign with wallet and verify
+const signature = await wallet.signMessage(new TextEncoder().encode(message))
+const result = await auth.siws.verify({
+  message,
+  signature: bs58.encode(signature),
+  address: walletAddress,
+})
+```
