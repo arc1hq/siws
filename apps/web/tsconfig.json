@@ -1,0 +1,12 @@
+{
+  "extends": "@repo/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"],
+      "@ui/*": ["../../packages/ui/src/*"],
+      "#site/content": ["./.velite"]
+    }
+  },
+  "include": ["next-env.d.ts", ".next/types/**/*.ts", "src"],
+  "exclude": ["node_modules", "velite.config.ts"]
+}
