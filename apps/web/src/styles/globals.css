@@ -27,12 +27,6 @@
   --doc-foreground: oklch(0.9848 0 0);
 }
 
-@layer base {
-  body {
-    @apply bg-doc-background dark:bg-background;
-  }
-}
-
 @utility border-grid {
   @apply border-border/80 dark:border-border border-dashed;
 }
@@ -138,8 +132,13 @@
 }
 
 @keyframes solana-gradient {
-  0% { background-position: 0% 50%; }
-  100% { background-position: -200% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: -200% 50%;
+  }
 }
 
 .solana-hover {
