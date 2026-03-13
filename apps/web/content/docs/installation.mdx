@@ -6,26 +6,13 @@ rank: 2
 
 ## Install @siws/core
 
-The core package provides message building, parsing, and Ed25519 signature verification.
+`@siws/core` is a core library for building and verifying SIWS messages.
 
-```bash title="npm"
-npm install @siws/core
-```
+<Installation package="@siws/core" className="mt-4" />
 
-```bash title="pnpm"
-pnpm add @siws/core
-```
+**Requirements:** Node.js >= 18. No native dependencies -- uses `@noble/curves` and `bs58`.
 
-```bash title="yarn"
-yarn add @siws/core
-```
-
-### Requirements
-
-- Node.js >= 18 (for `crypto.getRandomValues`)
-- No native dependencies -- uses `@noble/curves` for Ed25519 and `bs58` for Base58
-
-### Quick Usage
+### Usage
 
 ```ts
 import { SiwsMessageBuilder, generateNonce, verifySignature } from '@siws/core'
@@ -50,25 +37,13 @@ const result = await verifySignature(messageString, signature)
 
 ## Install @siws/better-auth
 
-The better-auth plugin provides batteries-included Solana wallet authentication with automatic nonce management, user creation, and session handling.
+A [better-auth](https://www.better-auth.com/) plugin with automatic nonce management, user creation, and session handling.
 
-```bash title="npm"
-npm install @siws/better-auth
-```
+<Installation package="@siws/better-auth" className="mt-4" />
 
-```bash title="pnpm"
-pnpm add @siws/better-auth
-```
+**Peer dependency:** `better-auth` >= 1.0.0
 
-```bash title="yarn"
-yarn add @siws/better-auth
-```
-
-### Peer Dependencies
-
-- `better-auth` >= 1.0.0
-
-### Quick Setup
+### Setup
 
 **Server:**
 

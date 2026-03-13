@@ -1,0 +1,61 @@
+---
+title: What is SIWS?
+excerpt: A standard message format and verification process for authenticating Solana wallet owners.
+rank: 0
+---
+
+**Sign In With Solana (SIWS)** is a standard for authenticating users with their Solana wallets -- no on-chain transactions required. It follows the pattern established by [EIP-4361](https://eips.ethereum.org/EIPS/eip-4361) (Sign-In with Ethereum).
+
+## Key Features
+
+- **Human-readable messages** -- Users see what they're signing before approval
+- **Ed25519 signatures** -- Native Solana signing, no transactions needed
+- **Replay protection** -- Server-generated nonces prevent reuse
+- **Domain binding** -- Messages bound to the requesting origin
+- **Expiration support** -- Configurable message lifetime
+- **Cluster awareness** -- Prevents cross-cluster replay (`mainnet-beta`, `devnet`, `testnet`)
+
+## Quick Example
+
+```ts title="server.ts"
+import { SiwsMessageBuilder, generateNonce, verifySignature } from '@siws/core'
+
+// 1. Build a message for the user to sign
+const message = new SiwsMessageBuilder()
+  .domain('example.com')
+  .address(walletAddress)
+  .uri('https://example.com/auth')
+  .nonce(generateNonce())
+  .issuedAt(new Date())
+  .cluster('mainnet-beta')
+  .statement('Sign in to Example')
+  .build()
+
+// 2. Send message.toMessage() to the client for signing
+
+// 3. Verify the signature
+const result = await verifySignature(
+  messageString,
+  signature,
+  walletAddress,
+  { domain: 'example.com' }
+)
+
+if (result.success) {
+  // Authenticated! result.data contains parsed message fields
+}
+```
+
+## Packages
+
+| Package | Description |
+|---------|-------------|
+| [`@siws/core`](/docs/packages/core) | Message building, parsing, and Ed25519 signature verification |
+| [`@siws/better-auth`](/docs/packages/better-auth) | Drop-in plugin for [better-auth](https://www.better-auth.com/) with server and client support |
+
+## Links
+
+- [Specification](/docs/specification) -- Message format and verification rules
+- [Installation](/docs/getting-started/installation) -- Get started
+- [GitHub](https://github.com/osiws/siws) -- Source code
+- [npm](https://www.npmjs.com/org/siws) -- Packages
