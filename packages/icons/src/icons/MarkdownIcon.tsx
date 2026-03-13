@@ -2,7 +2,12 @@ import type { LucideProps } from "lucide-react"
 
 export default function MarkdownIcon({ className, ...props }: LucideProps) {
   return (
-    <svg {...props} className={className} strokeLinejoin="round" viewBox="0 0 22 16">
+    <svg
+      {...props}
+      className={className}
+      strokeLinejoin="round"
+      viewBox="0 0 22 16"
+    >
       <path
         fillRule="evenodd"
         clipRule="evenodd"

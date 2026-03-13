@@ -1,78 +1,78 @@
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import bs58 from "bs58";
-import { authClient, useSession } from "@/lib/auth-client";
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useWallet } from "@solana/wallet-adapter-react"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
+import bs58 from "bs58"
+import { authClient, useSession } from "@/lib/auth-client"
 
 function truncateAddress(address: string) {
-  return `${address.slice(0, 4)}\u2025${address.slice(-4)}`;
+  return `${address.slice(0, 4)}\u2025${address.slice(-4)}`
 }
 
 export function SignInCard() {
-  const router = useRouter();
+  const router = useRouter()
   const { publicKey, signMessage, connected, connecting, disconnect, wallet } =
-    useWallet();
-  const { setVisible } = useWalletModal();
-  const { data: session, refetch } = useSession();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+    useWallet()
+  const { setVisible } = useWalletModal()
+  const { data: session, refetch } = useSession()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   const handleSignIn = async () => {
-    if (!publicKey || !signMessage) return;
+    if (!publicKey || !signMessage) return
 
-    setLoading(true);
-    setError(null);
+    setLoading(true)
+    setError(null)
 
     try {
-      const address = publicKey.toBase58();
+      const address = publicKey.toBase58()
 
       const { data: nonceData, error: nonceError } =
         await authClient.siws.getNonce({
           address,
           cluster: "devnet",
-        });
+        })
 
       if (nonceError || !nonceData) {
-        throw new Error(nonceError?.message || "Failed to get nonce");
+        throw new Error(nonceError?.message || "Failed to get nonce")
       }
 
-      const messageBytes = new TextEncoder().encode(nonceData.message);
-      const signatureBytes = await signMessage(messageBytes);
-      const signature = bs58.encode(signatureBytes);
+      const messageBytes = new TextEncoder().encode(nonceData.message)
+      const signatureBytes = await signMessage(messageBytes)
+      const signature = bs58.encode(signatureBytes)
 
       const { error: verifyError } = await authClient.siws.verify({
         message: nonceData.message,
         signature,
         address,
         cluster: "devnet",
-      });
+      })
 
       if (verifyError) {
-        throw new Error(verifyError.message || "Verification failed");
+        throw new Error(verifyError.message || "Verification failed")
       }
 
-      await refetch();
-      router.refresh();
+      await refetch()
+      router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sign in failed");
+      setError(err instanceof Error ? err.message : "Sign in failed")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSignOut = async () => {
-    await authClient.signOut();
-    await refetch();
-    router.refresh();
-  };
+    await authClient.signOut()
+    await refetch()
+    router.refresh()
+  }
 
   // Skeleton while client hydrates
   if (!mounted) {
@@ -80,7 +80,7 @@ export function SignInCard() {
       <section className="flex flex-col gap-3">
         <div className="h-10 w-full animate-pulse rounded-lg bg-gray-100" />
       </section>
-    );
+    )
   }
 
   // State: no wallet connected
@@ -94,9 +94,8 @@ export function SignInCard() {
         >
           {connecting ? "Connecting..." : "Connect wallet"}
         </button>
-
       </section>
-    );
+    )
   }
 
   // State: connected but not signed in
@@ -132,7 +131,7 @@ export function SignInCard() {
           any transaction.
         </p>
       </section>
-    );
+    )
   }
 
   // State: authenticated
@@ -158,5 +157,5 @@ export function SignInCard() {
         </button>
       </div>
     </section>
-  );
+  )
 }

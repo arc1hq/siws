@@ -1,9 +1,9 @@
-import type { SiwsMessageFields, Cluster } from '@/types'
-import { parseMessage } from '@/parser'
-import { validateAllFields } from '@/validator'
-import { SIWS_VERSION } from '@/constants'
-import { formatISO8601 } from '@/utils'
-import { SiwsError, SiwsErrorCode } from '@/errors'
+import type { SiwsMessageFields, Cluster } from "@/types"
+import { parseMessage } from "@/parser"
+import { validateAllFields } from "@/validator"
+import { SIWS_VERSION } from "@/constants"
+import { formatISO8601 } from "@/utils"
+import { SiwsError, SiwsErrorCode } from "@/errors"
 
 export class SiwsMessage {
   readonly domain: string
@@ -46,11 +46,11 @@ export class SiwsMessage {
 
     lines.push(`${this.domain} wants you to sign in with your Solana account:`)
     lines.push(this.address)
-    lines.push('')
+    lines.push("")
 
     if (this.statement) {
       lines.push(this.statement)
-      lines.push('')
+      lines.push("")
     }
 
     lines.push(`URI: ${this.uri}`)
@@ -73,13 +73,13 @@ export class SiwsMessage {
     lines.push(`Cluster: ${this.cluster}`)
 
     if (this.resources && this.resources.length > 0) {
-      lines.push('Resources:')
+      lines.push("Resources:")
       for (const resource of this.resources) {
         lines.push(`- ${resource}`)
       }
     }
 
-    return lines.join('\n')
+    return lines.join("\n")
   }
 
   toFields(): SiwsMessageFields {
@@ -126,7 +126,8 @@ export class SiwsMessageBuilder {
   }
 
   issuedAt(issuedAt: string | Date): this {
-    this.fields.issuedAt = issuedAt instanceof Date ? formatISO8601(issuedAt) : issuedAt
+    this.fields.issuedAt =
+      issuedAt instanceof Date ? formatISO8601(issuedAt) : issuedAt
     return this
   }
 
@@ -136,12 +137,16 @@ export class SiwsMessageBuilder {
   }
 
   expirationTime(expirationTime: string | Date): this {
-    this.fields.expirationTime = expirationTime instanceof Date ? formatISO8601(expirationTime) : expirationTime
+    this.fields.expirationTime =
+      expirationTime instanceof Date
+        ? formatISO8601(expirationTime)
+        : expirationTime
     return this
   }
 
   notBefore(notBefore: string | Date): this {
-    this.fields.notBefore = notBefore instanceof Date ? formatISO8601(notBefore) : notBefore
+    this.fields.notBefore =
+      notBefore instanceof Date ? formatISO8601(notBefore) : notBefore
     return this
   }
 
@@ -170,17 +175,17 @@ export class SiwsMessageBuilder {
 
   build(): SiwsMessage {
     const missing: string[] = []
-    if (!this.fields.domain) missing.push('domain')
-    if (!this.fields.address) missing.push('address')
-    if (!this.fields.uri) missing.push('uri')
-    if (!this.fields.nonce) missing.push('nonce')
-    if (!this.fields.issuedAt) missing.push('issuedAt')
-    if (!this.fields.cluster) missing.push('cluster')
+    if (!this.fields.domain) missing.push("domain")
+    if (!this.fields.address) missing.push("address")
+    if (!this.fields.uri) missing.push("uri")
+    if (!this.fields.nonce) missing.push("nonce")
+    if (!this.fields.issuedAt) missing.push("issuedAt")
+    if (!this.fields.cluster) missing.push("cluster")
 
     if (missing.length > 0) {
       throw new SiwsError(
         SiwsErrorCode.MISSING_REQUIRED_FIELD,
-        `Missing required fields: ${missing.join(', ')}`
+        `Missing required fields: ${missing.join(", ")}`,
       )
     }
 

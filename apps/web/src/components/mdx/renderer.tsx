@@ -1,7 +1,7 @@
-'use client'
+"use client"
 
-import * as runtime from 'react/jsx-runtime'
-import { mdxComponents } from './components'
+import * as runtime from "react/jsx-runtime"
+import { mdxComponents } from "./components"
 
 const useMDXComponent = (code: string) => {
   const fn = new Function(code)

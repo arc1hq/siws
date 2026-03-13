@@ -8,6 +8,20 @@ on:
       - packages/better-auth/**
 
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @siws/core --filter @siws/better-auth check-types
+      - run: pnpm --filter @siws/core --filter @siws/better-auth lint
+
   check-versions:
     runs-on: ubuntu-latest
     outputs:
@@ -15,35 +29,33 @@ jobs:
       better-auth-changed: ${{ steps.check.outputs.better-auth-changed }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      - name: Check for version changes
+      - name: Compare local versions against npm registry
         id: check
         run: |
-          CORE_NEW=$(jq -r '.version' packages/core/package.json)
-          BETTER_AUTH_NEW=$(jq -r '.version' packages/better-auth/package.json)
+          CORE_LOCAL=$(jq -r '.version' packages/core/package.json)
+          BETTER_AUTH_LOCAL=$(jq -r '.version' packages/better-auth/package.json)
 
-          CORE_OLD=$(git show HEAD~1:packages/core/package.json 2>/dev/null | jq -r '.version' 2>/dev/null || echo "")
-          BETTER_AUTH_OLD=$(git show HEAD~1:packages/better-auth/package.json 2>/dev/null | jq -r '.version' 2>/dev/null || echo "")
+          CORE_NPM=$(npm view @siws/core version 2>/dev/null || echo "0.0.0")
+          BETTER_AUTH_NPM=$(npm view @siws/better-auth version 2>/dev/null || echo "0.0.0")
 
-          echo "core: $CORE_OLD -> $CORE_NEW"
-          echo "better-auth: $BETTER_AUTH_OLD -> $BETTER_AUTH_NEW"
+          echo "core: npm=$CORE_NPM local=$CORE_LOCAL"
+          echo "better-auth: npm=$BETTER_AUTH_NPM local=$BETTER_AUTH_LOCAL"
 
-          if [ "$CORE_NEW" != "$CORE_OLD" ]; then
+          if [ "$CORE_LOCAL" != "$CORE_NPM" ]; then
             echo "core-changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "core-changed=false" >> "$GITHUB_OUTPUT"
           fi
 
-          if [ "$BETTER_AUTH_NEW" != "$BETTER_AUTH_OLD" ]; then
+          if [ "$BETTER_AUTH_LOCAL" != "$BETTER_AUTH_NPM" ]; then
             echo "better-auth-changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "better-auth-changed=false" >> "$GITHUB_OUTPUT"
           fi
 
   publish-core:
-    needs: check-versions
+    needs: [check, check-versions]
     if: needs.check-versions.outputs.core-changed == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -51,11 +63,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -67,9 +75,10 @@ jobs:
       - run: pnpm --filter @siws/core publish --no-git-checks --access public --provenance
 
   publish-better-auth:
-    needs: [check-versions, publish-core]
+    needs: [check, check-versions, publish-core]
     if: |
       always() &&
+      needs.check.result == 'success' &&
       needs.check-versions.outputs.better-auth-changed == 'true' &&
       (needs.publish-core.result == 'success' || needs.publish-core.result == 'skipped')
     runs-on: ubuntu-latest
@@ -78,11 +87,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20

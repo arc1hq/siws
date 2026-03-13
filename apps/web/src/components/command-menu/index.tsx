@@ -20,7 +20,10 @@ type NavSection = { title: string; items: { href: string; title: string }[] }
 
 function groupDocs(): NavSection[] {
   const published = docs.filter((d) => d.published)
-  const groups = new Map<string, { href: string; title: string; rank: number }[]>()
+  const groups = new Map<
+    string,
+    { href: string; title: string; rank: number }[]
+  >()
 
   for (const doc of published) {
     const parts = doc.slugAsParams.split("/")
@@ -79,7 +82,7 @@ export function CommandMenu() {
       setOpen(false)
       router.push(href)
     },
-    [router]
+    [router],
   )
 
   return (

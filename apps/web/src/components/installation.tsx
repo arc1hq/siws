@@ -17,7 +17,13 @@ import {
 
 const DEFAULT_PM = "pnpm"
 
-export default function Installation({ package: pkg = "@siws/core", className }: { package?: string, className?: string }) {
+export default function Installation({
+  package: pkg = "@siws/core",
+  className,
+}: {
+  package?: string
+  className?: string
+}) {
   const [packageManager, setPackageManager] = useState<string>(DEFAULT_PM)
 
   useEffect(() => {
@@ -56,7 +62,7 @@ export default function Installation({ package: pkg = "@siws/core", className }:
               size="sm"
               className={cn(
                 "h-auto w-auto cursor-pointer rounded border border-transparent px-1 py-0.5 font-mono text-xs text-muted-foreground",
-                packageManager === pm && "border-foreground/20 text-foreground"
+                packageManager === pm && "border-foreground/20 text-foreground",
               )}
               onClick={() => handleClick(pm)}
             >

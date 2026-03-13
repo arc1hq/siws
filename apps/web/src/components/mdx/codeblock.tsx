@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { cn } from '@ui/lib/utils'
-import { Button } from '@ui/shadcn/button'
-import { createContext, useContext, useEffect, useRef, useState } from 'react'
-import { CopyButton } from './copy-button'
+import { cn } from "@ui/lib/utils"
+import { Button } from "@ui/shadcn/button"
+import { createContext, useContext, useEffect, useRef, useState } from "react"
+import { CopyButton } from "./copy-button"
 
 interface CodeBlockContextValue {
   title?: string
@@ -20,7 +20,10 @@ const CodeBlockContext = createContext<CodeBlockContextValue | null>(null)
 
 function useCodeBlock() {
   const ctx = useContext(CodeBlockContext)
-  if (!ctx) throw new Error('CodeBlock compound components must be used within <CodeBlock>')
+  if (!ctx)
+    throw new Error(
+      "CodeBlock compound components must be used within <CodeBlock>",
+    )
   return ctx
 }
 
@@ -31,7 +34,7 @@ function CodeBlockRoot({
   dataTheme,
   codeChildren,
   className,
-  children
+  children,
 }: {
   title?: string
   collapsible?: boolean
@@ -41,14 +44,18 @@ function CodeBlockRoot({
   className?: string
   children: React.ReactNode
 }) {
-  const [isCollapsed, setIsCollapsed] = useState(collapsible && defaultCollapsed)
+  const [isCollapsed, setIsCollapsed] = useState(
+    collapsible && defaultCollapsed,
+  )
   const preRef = useRef<HTMLPreElement>(null)
   const [preBackgroundColor, setPreBackgroundColor] = useState<string>()
 
   useEffect(() => {
     const updatePreBackgroundColor = () => {
       if (!preRef.current) return
-      const nextBackgroundColor = window.getComputedStyle(preRef.current).backgroundColor
+      const nextBackgroundColor = window.getComputedStyle(
+        preRef.current,
+      ).backgroundColor
       if (nextBackgroundColor) setPreBackgroundColor(nextBackgroundColor)
     }
 
@@ -56,7 +63,10 @@ function CodeBlockRoot({
     const raf = window.requestAnimationFrame(updatePreBackgroundColor)
 
     const observer = new MutationObserver(updatePreBackgroundColor)
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    })
 
     return () => {
       window.cancelAnimationFrame(raf)
@@ -74,14 +84,14 @@ function CodeBlockRoot({
         setIsCollapsed,
         codeChildren,
         preRef,
-        preBackgroundColor
+        preBackgroundColor,
       }}
     >
       <div
         data-theme={dataTheme}
         className={cn(
-          'relative overflow-hidden rounded-xl text-sm group/codeblock border border-border',
-          className
+          "relative overflow-hidden rounded-xl text-sm group/codeblock border border-border",
+          className,
         )}
       >
         {children}
@@ -92,7 +102,7 @@ function CodeBlockRoot({
 
 function CodeBlockHeader({
   className,
-  children
+  children,
 }: {
   className?: string
   children: React.ReactNode
@@ -100,8 +110,8 @@ function CodeBlockHeader({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/40 font-sans',
-        className
+        "flex items-center justify-between gap-2 px-3 py-2 border-b border-border bg-muted/40 font-sans",
+        className,
       )}
     >
       {children}
@@ -113,7 +123,12 @@ function CodeBlockTitle({ className }: { className?: string }) {
   const { title } = useCodeBlock()
   if (!title) return null
   return (
-    <span className={cn('text-sm font-mono text-muted-foreground truncate', className)}>
+    <span
+      className={cn(
+        "text-sm font-mono text-muted-foreground truncate",
+        className,
+      )}
+    >
       {title}
     </span>
   )
@@ -129,12 +144,18 @@ function CodeBlockExpandButton({ className }: { className?: string }) {
       onClick={() => setIsCollapsed(!isCollapsed)}
       className={cn(className)}
     >
-      {isCollapsed ? 'Expand' : 'Collapse'}
+      {isCollapsed ? "Expand" : "Collapse"}
     </Button>
   )
 }
 
-function CodeBlockCopyButton({ className, floating }: { className?: string; floating?: boolean }) {
+function CodeBlockCopyButton({
+  className,
+  floating,
+}: {
+  className?: string
+  floating?: boolean
+}) {
   const { codeChildren, preBackgroundColor } = useCodeBlock()
 
   if (floating) {
@@ -142,9 +163,15 @@ function CodeBlockCopyButton({ className, floating }: { className?: string; floa
       <div className="pointer-events-none absolute top-1.5 right-1.5 z-10">
         <div
           className="pointer-events-auto rounded-md bg-muted/80 p-1"
-          style={preBackgroundColor ? { backgroundColor: preBackgroundColor } : undefined}
+          style={
+            preBackgroundColor
+              ? { backgroundColor: preBackgroundColor }
+              : undefined
+          }
         >
-          <CopyButton className={cn('[&_svg]:size-3.5', className)}>{codeChildren}</CopyButton>
+          <CopyButton className={cn("[&_svg]:size-3.5", className)}>
+            {codeChildren}
+          </CopyButton>
         </div>
       </div>
     )
@@ -155,7 +182,7 @@ function CodeBlockCopyButton({ className, floating }: { className?: string; floa
 
 function CodeBlockContent({
   className,
-  children
+  children,
 }: {
   className?: string
   children: React.ReactNode
@@ -165,11 +192,11 @@ function CodeBlockContent({
   return (
     <div
       className={cn(
-        'relative font-mono codeblock-scroll-fades',
-        collapsible ? 'overflow-hidden' : 'overflow-visible',
-        collapsible && 'transition-[max-height] duration-300 ease-in-out',
-        collapsible && isCollapsed ? 'max-h-[200px]' : 'max-h-none',
-        className
+        "relative font-mono codeblock-scroll-fades",
+        collapsible ? "overflow-hidden" : "overflow-visible",
+        collapsible && "transition-[max-height] duration-300 ease-in-out",
+        collapsible && isCollapsed ? "max-h-[200px]" : "max-h-none",
+        className,
       )}
     >
       {children}
@@ -183,8 +210,8 @@ function CodeBlockCollapsedOverlay({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        'absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-muted to-transparent flex items-end justify-center pb-2',
-        className
+        "absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-muted to-transparent flex items-end justify-center pb-2",
+        className,
       )}
     >
       <Button
@@ -203,21 +230,21 @@ function CodeBlockCollapsedOverlay({ className }: { className?: string }) {
 function CodeBlockPre({
   className,
   preProps,
-  children
+  children,
 }: {
   className?: string
   preProps: Omit<
     PreBlockProps,
-    | 'children'
-    | 'className'
-    | '__title__'
-    | '__collapsed__'
-    | '__rawString__'
-    | '__withMeta__'
-    | '__src__'
-    | '__event__'
-    | '__style__'
-    | 'data-theme'
+    | "children"
+    | "className"
+    | "__title__"
+    | "__collapsed__"
+    | "__rawString__"
+    | "__withMeta__"
+    | "__src__"
+    | "__event__"
+    | "__style__"
+    | "data-theme"
   >
   children: React.ReactNode
 }) {
@@ -226,7 +253,7 @@ function CodeBlockPre({
   return (
     <pre
       ref={preRef}
-      className={cn('overflow-x-auto font-mono no-scrollbar', className)}
+      className={cn("overflow-x-auto font-mono no-scrollbar", className)}
       {...preProps}
     >
       {children}
@@ -242,7 +269,7 @@ export interface PreBlockProps extends React.HTMLAttributes<HTMLPreElement> {
   __src__?: string
   __event__?: string
   __style__?: string
-  'data-theme'?: string
+  "data-theme"?: string
 }
 
 export const CodeBlock = ({
@@ -255,11 +282,11 @@ export const CodeBlock = ({
   __src__: _src,
   __event__: _event,
   __style__: _style,
-  'data-theme': dataTheme,
+  "data-theme": dataTheme,
   ...props
 }: PreBlockProps) => {
   const hasTitle = !!title
-  const isCollapsible = collapsed === 'true'
+  const isCollapsible = collapsed === "true"
 
   return (
     <CodeBlockRoot
@@ -296,5 +323,5 @@ export {
   CodeBlockExpandButton,
   CodeBlockCopyButton,
   CodeBlockContent,
-  CodeBlockCollapsedOverlay
+  CodeBlockCollapsedOverlay,
 }

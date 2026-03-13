@@ -1,23 +1,23 @@
-'use client'
+"use client"
 
-import { Button } from '@siws/ui/shadcn/button'
+import { Button } from "@siws/ui/shadcn/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@siws/ui/shadcn/dropdown-menu'
-import type { AdjacentPage } from '@/lib/get-adjacent-pages'
+} from "@siws/ui/shadcn/dropdown-menu"
+import type { AdjacentPage } from "@/lib/get-adjacent-pages"
 import {
   buildEncodedAssistantContext,
   getAssistantTargets,
-} from '@/lib/assistant-targets'
-import { useHotkey } from '@tanstack/react-hotkeys'
-import { ArrowLeft, ArrowRight, Check, ChevronDown, Copy } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useMemo, useState } from 'react'
-import { cn } from '@ui/lib/utils'
+} from "@/lib/assistant-targets"
+import { useHotkey } from "@tanstack/react-hotkeys"
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Copy } from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useMemo, useState } from "react"
+import { cn } from "@ui/lib/utils"
 
 interface PageHeaderProps {
   title: string
@@ -28,13 +28,20 @@ interface PageHeaderProps {
   next: AdjacentPage
 }
 
-export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, next }: PageHeaderProps) {
+export function PageHeader({
+  title,
+  excerpt,
+  markdownHref,
+  rawContent,
+  prev,
+  next,
+}: PageHeaderProps) {
   const router = useRouter()
   const [copied, setCopied] = useState(false)
   const canCopy = Boolean(rawContent && markdownHref)
   const triggerId = markdownHref
-    ? `copy-page-menu-trigger-${markdownHref.replace(/[^a-zA-Z0-9_-]/g, '-')}`
-    : 'copy-page-menu-trigger'
+    ? `copy-page-menu-trigger-${markdownHref.replace(/[^a-zA-Z0-9_-]/g, "-")}`
+    : "copy-page-menu-trigger"
 
   const handleCopy = async () => {
     if (!rawContent) return
@@ -44,24 +51,27 @@ export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, nex
   }
 
   useHotkey(
-    'H',
+    "H",
     () => {
       if (prev) router.push(prev.href)
     },
-    { enabled: !!prev }
+    { enabled: !!prev },
   )
   useHotkey(
-    'L',
+    "L",
     () => {
       if (next) router.push(next.href)
     },
-    { enabled: !!next }
+    { enabled: !!next },
   )
 
-  const encoded = useMemo(() => buildEncodedAssistantContext(rawContent), [rawContent])
+  const encoded = useMemo(
+    () => buildEncodedAssistantContext(rawContent),
+    [rawContent],
+  )
   const assistantTargets = useMemo(
     () => getAssistantTargets({ encoded, markdownHref, includeMarkdown: true }),
-    [encoded, markdownHref]
+    [encoded, markdownHref],
   )
 
   return (
@@ -77,7 +87,11 @@ export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, nex
                 className="rounded-r-none border-0 gap-2"
                 onClick={handleCopy}
               >
-                {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+                {copied ? (
+                  <Check className="size-3.5" />
+                ) : (
+                  <Copy className="size-3.5" />
+                )}
                 <span>Copy Page</span>
               </Button>
               <div className="h-8 border-r border-dashed" />
@@ -85,7 +99,11 @@ export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, nex
                 <DropdownMenuTrigger
                   id={triggerId}
                   render={
-                    <Button variant="secondary" size="sm" className="rounded-l-none border-0 px-1.5">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="rounded-l-none border-0 px-1.5"
+                    >
                       <ChevronDown className="size-3.5" />
                     </Button>
                   }
@@ -98,8 +116,10 @@ export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, nex
                       render={
                         <a
                           href={target.href}
-                          target={target.external ? '_blank' : undefined}
-                          rel={target.external ? 'noopener noreferrer' : undefined}
+                          target={target.external ? "_blank" : undefined}
+                          rel={
+                            target.external ? "noopener noreferrer" : undefined
+                          }
                         />
                       }
                     >
@@ -115,10 +135,13 @@ export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, nex
             <Button
               variant="secondary"
               size="icon"
-              className={cn("rounded-r-none border-0", !prev && "text-muted-foreground")}
+              className={cn(
+                "rounded-r-none border-0",
+                !prev && "text-muted-foreground",
+              )}
               disabled={!prev}
               nativeButton={false}
-              render={<Link href={prev?.href ?? '#'} />}
+              render={<Link href={prev?.href ?? "#"} />}
             >
               <ArrowLeft className="size-4" />
             </Button>
@@ -126,10 +149,13 @@ export function PageHeader({ title, excerpt, markdownHref, rawContent, prev, nex
             <Button
               variant="secondary"
               size="icon"
-              className={cn("rounded-l-none border-0", !next && "text-muted-foreground")}
+              className={cn(
+                "rounded-l-none border-0",
+                !next && "text-muted-foreground",
+              )}
               disabled={!next}
               nativeButton={false}
-              render={<Link href={next?.href ?? '#'} />}
+              render={<Link href={next?.href ?? "#"} />}
             >
               <ArrowRight className="size-4" />
             </Button>

@@ -14,28 +14,25 @@ A standard message format and verification process for authenticating Solana wal
 ## Quick Example
 
 ```ts
-import { SiwsMessageBuilder, generateNonce, verifySignature } from '@siws/core'
+import { SiwsMessageBuilder, generateNonce, verifySignature } from "@siws/core"
 
 // 1. Build a message for the user to sign
 const message = new SiwsMessageBuilder()
-  .domain('example.com')
+  .domain("example.com")
   .address(walletAddress)
-  .uri('https://example.com/auth')
+  .uri("https://example.com/auth")
   .nonce(generateNonce())
   .issuedAt(new Date())
-  .cluster('mainnet-beta')
-  .statement('Sign in to Example')
+  .cluster("mainnet-beta")
+  .statement("Sign in to Example")
   .build()
 
 // 2. Send message.toMessage() to the client for signing
 
 // 3. Verify the signature
-const result = await verifySignature(
-  messageString,
-  signature,
-  walletAddress,
-  { domain: 'example.com' }
-)
+const result = await verifySignature(messageString, signature, walletAddress, {
+  domain: "example.com",
+})
 
 if (result.success) {
   // Authenticated! result.data contains parsed message fields
@@ -44,9 +41,9 @@ if (result.success) {
 
 ## Packages
 
-| Package | Description |
-|---------|-------------|
-| [`@siws/core`](https://www.npmjs.com/package/@siws/core) | Message building, parsing, and Ed25519 signature verification |
+| Package                                                                | Description                                                                                   |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| [`@siws/core`](https://www.npmjs.com/package/@siws/core)               | Message building, parsing, and Ed25519 signature verification                                 |
 | [`@siws/better-auth`](https://www.npmjs.com/package/@siws/better-auth) | Drop-in plugin for [better-auth](https://www.better-auth.com/) with server and client support |
 
 ### @siws/core
@@ -70,15 +67,15 @@ A [better-auth](https://www.better-auth.com/) plugin that handles the complete S
 **Server:**
 
 ```ts
-import { betterAuth } from 'better-auth'
-import { siws } from '@siws/better-auth'
+import { betterAuth } from "better-auth"
+import { siws } from "@siws/better-auth"
 
 export const auth = betterAuth({
   plugins: [
     siws({
-      statement: 'Sign in to MyApp',
+      statement: "Sign in to MyApp",
       expirationTime: 300,
-      cluster: 'mainnet-beta',
+      cluster: "mainnet-beta",
     }),
   ],
 })
@@ -87,8 +84,8 @@ export const auth = betterAuth({
 **Client:**
 
 ```ts
-import { createAuthClient } from 'better-auth/client'
-import { siwsClient } from '@siws/better-auth/client'
+import { createAuthClient } from "better-auth/client"
+import { siwsClient } from "@siws/better-auth/client"
 
 export const auth = createAuthClient({
   plugins: [siwsClient()],
@@ -97,7 +94,7 @@ export const auth = createAuthClient({
 // Get nonce and message
 const { nonce, message } = await auth.siws.getNonce({
   address: walletAddress,
-  cluster: 'mainnet-beta',
+  cluster: "mainnet-beta",
 })
 
 // Sign with wallet and verify

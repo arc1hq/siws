@@ -1,8 +1,8 @@
-import type { Cluster } from '@siws/core'
-import type { InferOptionSchema } from 'better-auth'
-import type { schema } from './schema'
+import type { Cluster } from "@siws/core"
+import type { InferOptionSchema } from "better-auth"
+import type { schema } from "./schema"
 
-export type { Cluster } from '@siws/core'
+export type { Cluster } from "@siws/core"
 
 export interface SiwsOptions {
   /**

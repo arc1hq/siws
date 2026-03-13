@@ -1,9 +1,9 @@
-'use client'
+"use client"
 
-import { Button } from '@siws/ui/shadcn/button'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import Link from 'next/link'
-import type { AdjacentPage } from '@/lib/get-adjacent-pages'
+import { Button } from "@siws/ui/shadcn/button"
+import { ArrowLeft, ArrowRight } from "lucide-react"
+import Link from "next/link"
+import type { AdjacentPage } from "@/lib/get-adjacent-pages"
 
 interface PageNavigationProps {
   prev: AdjacentPage

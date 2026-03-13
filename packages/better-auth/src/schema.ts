@@ -1,4 +1,4 @@
-import type { BetterAuthPluginDBSchema } from 'better-auth/db'
+import type { BetterAuthPluginDBSchema } from "better-auth/db"
 
 /**
  * Database schema for the SIWS plugin.
@@ -10,26 +10,26 @@ export const schema = {
   solanaAddress: {
     fields: {
       userId: {
-        type: 'string',
-        references: { model: 'user', field: 'id', onDelete: 'cascade' },
+        type: "string",
+        references: { model: "user", field: "id", onDelete: "cascade" },
         required: true,
         index: true,
       },
       address: {
-        type: 'string',
+        type: "string",
         required: true,
         index: true,
       },
       cluster: {
-        type: 'string',
+        type: "string",
         required: true,
       },
       isPrimary: {
-        type: 'boolean',
+        type: "boolean",
         defaultValue: false,
       },
       createdAt: {
-        type: 'date',
+        type: "date",
         required: true,
       },
     },

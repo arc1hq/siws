@@ -1,30 +1,38 @@
-import { docs } from '#site/content'
-import { MDXContentRenderer } from '@/components/mdx/renderer'
-import { TableOfContents } from '@/components/mdx/toc'
-import { PageFooter } from '@/components/page-footer'
-import { PageHeader } from '@/components/page-header'
-import { PageNavigation } from '@/components/page-navigation'
-import { TocPromoCard } from '@/components/toc-promo-card'
-import { getAdjacentPages } from '@/lib/get-adjacent-pages'
-import { notFound } from 'next/navigation'
+import { docs } from "#site/content"
+import { MDXContentRenderer } from "@/components/mdx/renderer"
+import { TableOfContents } from "@/components/mdx/toc"
+import { PageFooter } from "@/components/page-footer"
+import { PageHeader } from "@/components/page-header"
+import { PageNavigation } from "@/components/page-navigation"
+import { TocPromoCard } from "@/components/toc-promo-card"
+import { getAdjacentPages } from "@/lib/get-adjacent-pages"
+import { notFound } from "next/navigation"
 
 async function getDocFromParams(slugParts: string[]) {
-  const slug = slugParts.join('/')
+  const slug = slugParts.join("/")
   return docs.find((doc) => doc.slugAsParams === slug)
 }
 
 export async function generateStaticParams() {
-  return docs.map((doc) => ({ slug: doc.slugAsParams.split('/') }))
+  return docs.map((doc) => ({ slug: doc.slugAsParams.split("/") }))
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>
+}) {
   const { slug } = await params
   const doc = await getDocFromParams(slug)
   if (!doc) return {}
   return { title: doc.title, description: doc.excerpt }
 }
 
-export default async function DocPage({ params }: { params: Promise<{ slug: string[] }> }) {
+export default async function DocPage({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>
+}) {
   const { slug } = await params
   const doc = await getDocFromParams(slug)
 
@@ -55,7 +63,11 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
       </div>
       <aside className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[calc(100svh-var(--header-height)-2rem)] w-(--sidebar-width) flex-col gap-8 overflow-x-hidden overflow-y-auto overscroll-none pb-8 px-3 pt-6 lg:pt-10 xl:flex">
         {doc.showToc && doc.toc.length > 0 && (
-          <TableOfContents toc={doc.toc} markerVariant={doc.tocMarkerVariant} size='sm' />
+          <TableOfContents
+            toc={doc.toc}
+            markerVariant={doc.tocMarkerVariant}
+            size="sm"
+          />
         )}
         <TocPromoCard />
       </aside>

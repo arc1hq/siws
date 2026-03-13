@@ -1,17 +1,17 @@
-'use client'
+"use client"
 
-import { Button } from '@siws/ui/shadcn/button'
-import { cn } from '@siws/ui/lib/utils'
-import { Sheet, SheetContent, SheetTrigger } from '@siws/ui/shadcn/sheet'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useState } from 'react'
-import { MenuIcon } from 'lucide-react'
-import { SidebarContent } from '../sidebar'
+import { Button } from "@siws/ui/shadcn/button"
+import { cn } from "@siws/ui/lib/utils"
+import { Sheet, SheetContent, SheetTrigger } from "@siws/ui/shadcn/sheet"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useState } from "react"
+import { MenuIcon } from "lucide-react"
+import { SidebarContent } from "../sidebar"
 
 const navConfig = [
-  { label: 'Docs', href: '/docs' },
-  { label: 'Packages', href: '/docs/packages' },
+  { label: "Docs", href: "/docs" },
+  { label: "Packages", href: "/docs/packages" },
 ]
 
 export function MobileNav() {
@@ -20,8 +20,11 @@ export function MobileNav() {
 
   const isActive = (href: string) => {
     if (!pathname) return false
-    if (href === '/docs/packages') return pathname.startsWith('/docs/packages')
-    if (href === '/docs') return pathname.startsWith('/docs') && !pathname.startsWith('/docs/packages')
+    if (href === "/docs/packages") return pathname.startsWith("/docs/packages")
+    if (href === "/docs")
+      return (
+        pathname.startsWith("/docs") && !pathname.startsWith("/docs/packages")
+      )
     return pathname.startsWith(href)
   }
 
@@ -45,10 +48,14 @@ export function MobileNav() {
                   variant="ghost"
                   size="sm"
                   nativeButton={false}
-                  render={<Link href={item.href} onClick={() => setOpen(false)} />}
+                  render={
+                    <Link href={item.href} onClick={() => setOpen(false)} />
+                  }
                   className={cn(
-                    'rounded-sm text-sm',
-                    isActive(item.href) ? 'bg-muted text-foreground' : 'text-muted-foreground'
+                    "rounded-sm text-sm",
+                    isActive(item.href)
+                      ? "bg-muted text-foreground"
+                      : "text-muted-foreground",
                   )}
                 >
                   {item.label}

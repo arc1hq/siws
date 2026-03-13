@@ -9,7 +9,10 @@ export default function NotFound() {
       <div className="w-full max-w-md space-y-16">
         {/* Header */}
         <header className="flex items-center justify-between">
-          <Link href="/" className="font-mono text-sm font-medium tracking-tight">
+          <Link
+            href="/"
+            className="font-mono text-sm font-medium tracking-tight"
+          >
             open siws
           </Link>
           <nav className="flex items-center">
@@ -27,11 +30,7 @@ export default function NotFound() {
             The page you're looking for doesn't exist or has been moved.
           </p>
           <div className="flex items-center gap-3 mt-5">
-            <Button
-              size="sm"
-              nativeButton={false}
-              render={<Link href="/" />}
-            >
+            <Button size="sm" nativeButton={false} render={<Link href="/" />}>
               <ArrowLeft data-icon="inline-start" />
               Home
             </Button>

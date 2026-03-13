@@ -1,7 +1,7 @@
-import { Suspense } from "react";
-import { SignInCard } from "@/components/sign-in-card";
-import { SessionInfo } from "@/components/session-info";
-import { ServerSession } from "@/components/server-session";
+import { Suspense } from "react"
+import { SignInCard } from "@/components/sign-in-card"
+import { SessionInfo } from "@/components/session-info"
+import { ServerSession } from "@/components/server-session"
 
 export default function Home() {
   return (
@@ -11,8 +11,7 @@ export default function Home() {
           Sign In With Solana
         </h1>
         <p className="mt-2 text-base text-gray-500">
-          Connect your wallet, sign a message, get a session.
-          Built with{" "}
+          Connect your wallet, sign a message, get a session. Built with{" "}
           <a
             href="https://www.npmjs.com/package/@siws/better-auth"
             target="_blank"
@@ -51,5 +50,5 @@ export default function Home() {
         </Suspense>
       </div>
     </main>
-  );
+  )
 }

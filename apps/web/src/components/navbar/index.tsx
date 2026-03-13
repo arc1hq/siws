@@ -1,38 +1,38 @@
-'use client'
+"use client"
 
-import { Button } from '@siws/ui/shadcn/button'
-import { cn } from '@siws/ui/lib/utils'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { MobileNav } from './mobile'
-import { ThemeToggler } from '@/components/theme/toggler'
-import { CommandMenu } from '@/components/command-menu'
-import { BookOpen, Package } from 'lucide-react'
-import { SectionSwitcher, type SectionItem } from './section-switcher'
-import { siteConfig } from '@/lib/site'
-import GitHubIcon from '@siws/icons/GitHubIcon'
+import { Button } from "@siws/ui/shadcn/button"
+import { cn } from "@siws/ui/lib/utils"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { MobileNav } from "./mobile"
+import { ThemeToggler } from "@/components/theme/toggler"
+import { CommandMenu } from "@/components/command-menu"
+import { BookOpen, Package } from "lucide-react"
+import { SectionSwitcher, type SectionItem } from "./section-switcher"
+import { siteConfig } from "@/lib/site"
+import GitHubIcon from "@siws/icons/GitHubIcon"
 
 const sectionItems: SectionItem[] = [
   {
-    label: 'Documentation',
-    description: 'Guides & specification',
-    href: '/docs/what-is-siws',
+    label: "Documentation",
+    description: "Guides & specification",
+    href: "/docs/what-is-siws",
     icon: BookOpen,
-    isActive: (p) => p.startsWith('/docs') && !p.startsWith('/docs/packages'),
+    isActive: (p) => p.startsWith("/docs") && !p.startsWith("/docs/packages"),
   },
   {
-    label: 'Package',
-    description: 'SDK & integrations',
-    href: '/docs/packages/core',
+    label: "Package",
+    description: "SDK & integrations",
+    href: "/docs/packages/core",
     icon: Package,
-    isActive: (p) => p.startsWith('/docs/packages'),
+    isActive: (p) => p.startsWith("/docs/packages"),
   },
 ]
 
 const navConfig = [
-  { label: 'Home', href: '/' },
-  { label: 'Docs', href: '/docs/what-is-siws' },
-  { label: 'Packages', href: '/docs/packages/core' },
+  { label: "Home", href: "/" },
+  { label: "Docs", href: "/docs/what-is-siws" },
+  { label: "Packages", href: "/docs/packages/core" },
 ]
 
 export function Navbar() {
@@ -40,9 +40,13 @@ export function Navbar() {
 
   const isActive = (href: string) => {
     if (!pathname) return false
-    if (href === '/') return pathname === '/'
-    if (href.startsWith('/docs/packages')) return pathname.startsWith('/docs/packages')
-    if (href.startsWith('/docs')) return pathname.startsWith('/docs') && !pathname.startsWith('/docs/packages')
+    if (href === "/") return pathname === "/"
+    if (href.startsWith("/docs/packages"))
+      return pathname.startsWith("/docs/packages")
+    if (href.startsWith("/docs"))
+      return (
+        pathname.startsWith("/docs") && !pathname.startsWith("/docs/packages")
+      )
     return pathname.startsWith(href)
   }
 
@@ -61,8 +65,10 @@ export function Navbar() {
             nativeButton={false}
             render={<Link href={item.href} />}
             className={cn(
-              'rounded-sm text-sm',
-              isActive(item.href) ? 'bg-muted text-foreground' : 'text-muted-foreground'
+              "rounded-sm text-sm",
+              isActive(item.href)
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground",
             )}
           >
             {item.label}
@@ -71,7 +77,13 @@ export function Navbar() {
       </div>
       <div className="ml-auto flex items-center gap-2 pr-3">
         <CommandMenu />
-        <Button variant="ghost" size="icon" nativeButton={false} className="ml-2" render={<a href={siteConfig.links.github} />}>
+        <Button
+          variant="ghost"
+          size="icon"
+          nativeButton={false}
+          className="ml-2"
+          render={<a href={siteConfig.links.github} />}
+        >
           <GitHubIcon className="size-3.5" />
         </Button>
         <ThemeToggler />

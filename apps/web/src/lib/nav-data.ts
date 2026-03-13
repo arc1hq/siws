@@ -10,18 +10,18 @@ export type NavSection = {
 
 export const navSections: NavSection[] = [
   {
-    title: 'Getting Started',
+    title: "Getting Started",
     items: [
-      { href: '/docs/what-is-siws', title: 'What is SIWS?' },
-      { href: '/docs/specification', title: 'Specification' },
-      { href: '/docs/installation', title: 'Installation' },
+      { href: "/docs/what-is-siws", title: "What is SIWS?" },
+      { href: "/docs/specification", title: "Specification" },
+      { href: "/docs/installation", title: "Installation" },
     ],
   },
   {
-    title: 'Packages',
+    title: "Packages",
     items: [
-      { href: '/docs/packages/core', title: '@siws/core' },
-      { href: '/docs/packages/better-auth', title: '@siws/better-auth' },
+      { href: "/docs/packages/core", title: "@siws/core" },
+      { href: "/docs/packages/better-auth", title: "@siws/better-auth" },
     ],
   },
 ]

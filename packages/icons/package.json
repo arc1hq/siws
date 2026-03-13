@@ -7,15 +7,14 @@
     "./*": "./src/icons/*.tsx"
   },
   "scripts": {
-    "lint": "oxlint .",
-    "fmt": "oxfmt --write .",
-    "fmt:check": "oxfmt --check .",
+    "lint": "eslint .",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "lucide-react": "^0.577.0"
   },
   "devDependencies": {
+    "@siws/eslint-config": "workspace:*",
     "@siws/typescript-config": "workspace:*",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",

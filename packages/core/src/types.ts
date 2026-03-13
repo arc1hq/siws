@@ -1,6 +1,6 @@
-import type { SiwsError } from '@/errors'
+import type { SiwsError } from "@/errors"
 
-export type Cluster = 'mainnet-beta' | 'devnet' | 'testnet'
+export type Cluster = "mainnet-beta" | "devnet" | "testnet"
 
 export interface SiwsMessageFields {
   domain: string

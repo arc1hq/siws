@@ -1,4 +1,4 @@
-import type { Node } from 'unist'
+import type { Node } from "unist"
 
 /**
  * No-op rehype component plugin.

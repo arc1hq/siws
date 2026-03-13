@@ -11,10 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@ui/shadcn/dialog"
-import {
-  InputGroup,
-  InputGroupAddon,
-} from "@ui/shadcn/input-group"
+import { InputGroup, InputGroupAddon } from "@ui/shadcn/input-group"
 import { SearchIcon, CheckIcon } from "lucide-react"
 
 function Command({
@@ -26,7 +23,7 @@ function Command({
       data-slot="command"
       className={cn(
         "bg-popover text-popover-foreground flex size-full flex-col overflow-hidden rounded-xl! p-1",
-        className
+        className,
       )}
       {...props}
     />
@@ -56,7 +53,7 @@ function CommandDialog({
       <DialogContent
         className={cn(
           "top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0",
-          className
+          className,
         )}
         showCloseButton={showCloseButton}
       >
@@ -77,7 +74,7 @@ function CommandInput({
           data-slot="command-input"
           className={cn(
             "w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
-            className
+            className,
           )}
           {...props}
         />
@@ -98,7 +95,7 @@ function CommandList({
       data-slot="command-list"
       className={cn(
         "no-scrollbar max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none",
-        className
+        className,
       )}
       {...props}
     />
@@ -127,7 +124,7 @@ function CommandGroup({
       data-slot="command-group"
       className={cn(
         "text-foreground **:[[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-medium",
-        className
+        className,
       )}
       {...props}
     />
@@ -157,7 +154,7 @@ function CommandItem({
       data-slot="command-item"
       className={cn(
         "data-[selected=true]:bg-muted data-[selected=true]:text-foreground data-[selected=true]:*:[svg]:text-foreground group/command-item relative flex cursor-default items-center gap-2 rounded-lg px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className
+        className,
       )}
       {...props}
     >
@@ -167,16 +164,13 @@ function CommandItem({
   )
 }
 
-function CommandShortcut({
-  className,
-  ...props
-}: React.ComponentProps<"kbd">) {
+function CommandShortcut({ className, ...props }: React.ComponentProps<"kbd">) {
   return (
     <kbd
       data-slot="command-shortcut"
       className={cn(
         "bg-muted text-muted-foreground pointer-events-none ml-auto inline-flex h-5 w-fit min-w-5 items-center justify-center gap-0.5 rounded-sm px-1 font-sans text-xs font-medium select-none",
-        className
+        className,
       )}
       {...props}
     />

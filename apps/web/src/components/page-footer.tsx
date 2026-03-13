@@ -1,19 +1,27 @@
-import Link from 'next/link'
-import { siteConfig } from '@/lib/site'
+import Link from "next/link"
+import { siteConfig } from "@/lib/site"
 
 const linkGroups = [
   {
-    title: 'Resources',
+    title: "Resources",
     links: [
-      { label: 'Documentation', href: '/docs/what-is-siws' },
-      { label: 'GitHub', href: siteConfig.links.github, external: true },
+      { label: "Documentation", href: "/docs/what-is-siws" },
+      { label: "GitHub", href: siteConfig.links.github, external: true },
     ],
   },
   {
-    title: 'Packages',
+    title: "Packages",
     links: [
-      { label: '@siws/core', href: 'https://www.npmjs.com/package/@siws/core', external: true },
-      { label: '@siws/better-auth', href: 'https://www.npmjs.com/package/@siws/better-auth', external: true },
+      {
+        label: "@siws/core",
+        href: "https://www.npmjs.com/package/@siws/core",
+        external: true,
+      },
+      {
+        label: "@siws/better-auth",
+        href: "https://www.npmjs.com/package/@siws/better-auth",
+        external: true,
+      },
     ],
   },
 ]
@@ -25,19 +33,24 @@ export function PageFooter({ editPath }: { editPath?: string }) {
         <div className="flex flex-col gap-1">
           <p className="text-sm font-medium">SIWS</p>
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} osiws contributors. All rights reserved.
+            &copy; {new Date().getFullYear()} osiws contributors. All rights
+            reserved.
           </p>
         </div>
         <div className="flex gap-12">
           {linkGroups.map((group) => (
             <div key={group.title} className="flex flex-col gap-2">
-              <p className="text-xs font-medium text-muted-foreground">{group.title}</p>
+              <p className="text-xs font-medium text-muted-foreground">
+                {group.title}
+              </p>
               {group.links.map((link) => (
                 <Link
                   key={link.label}
                   href={link.href}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+                  {...(link.external
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
                 >
                   {link.label}
                 </Link>

@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
-import { Button } from '@siws/ui/shadcn/button'
-import { cn } from '@siws/ui/lib/utils'
-import { navSections } from '@/lib/nav-data'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { useEffect, useRef } from 'react'
+import { Button } from "@siws/ui/shadcn/button"
+import { cn } from "@siws/ui/lib/utils"
+import { navSections } from "@/lib/nav-data"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { useEffect, useRef } from "react"
 
 export function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
   const pathname = usePathname()
@@ -17,10 +17,12 @@ export function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     const nav = navRef.current
     if (!nav) return
 
-    const activeLink = nav.querySelector<HTMLAnchorElement>('a[data-active="true"]')
+    const activeLink = nav.querySelector<HTMLAnchorElement>(
+      'a[data-active="true"]',
+    )
     if (!activeLink) return
 
-    activeLink.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+    activeLink.scrollIntoView({ block: "nearest", inline: "nearest" })
   }, [pathname])
 
   return (
@@ -41,12 +43,14 @@ export function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                       <Link
                         href={item.href}
                         onClick={onLinkClick}
-                        data-active={isActive ? 'true' : undefined}
+                        data-active={isActive ? "true" : undefined}
                       />
                     }
                     className={cn(
-                      'justify-start w-full rounded-sm',
-                      isActive ? 'bg-muted text-foreground' : 'text-muted-foreground'
+                      "justify-start w-full rounded-sm",
+                      isActive
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     {item.title}

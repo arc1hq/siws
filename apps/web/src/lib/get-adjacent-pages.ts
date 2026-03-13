@@ -1,4 +1,4 @@
-import { getFlatNavItems } from './nav-data'
+import { getFlatNavItems } from "./nav-data"
 
 export type AdjacentPage = { title: string; href: string } | null
 

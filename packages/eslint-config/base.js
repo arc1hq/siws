@@ -19,6 +19,8 @@ export const config = [
     },
     rules: {
       "turbo/no-undeclared-env-vars": "warn",
+      "semi": ["warn", "never"],
+      "@typescript-eslint/no-extra-semi": "off",
     },
   },
   {

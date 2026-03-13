@@ -1,9 +1,9 @@
-"use client";
+"use client"
 
-import { useSession } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client"
 
 export function SessionInfo() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = useSession()
 
   return (
     <section>
@@ -36,7 +36,7 @@ export function SessionInfo() {
         <p className="text-sm text-gray-500">No active session</p>
       )}
     </section>
-  );
+  )
 }
 
 function Pair({ k, v }: { k: string; v: string }) {
@@ -46,5 +46,5 @@ function Pair({ k, v }: { k: string; v: string }) {
       <span className="text-gray-500">{": "}</span>
       <span className="text-foreground">{v}</span>
     </span>
-  );
+  )
 }

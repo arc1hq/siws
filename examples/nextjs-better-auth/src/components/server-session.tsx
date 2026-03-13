@@ -1,10 +1,10 @@
-import { headers } from "next/headers";
-import { auth } from "@/lib/auth";
+import { headers } from "next/headers"
+import { auth } from "@/lib/auth"
 
 export async function ServerSession() {
   const session = await auth.api.getSession({
     headers: await headers(),
-  });
+  })
 
   return (
     <section>
@@ -27,7 +27,7 @@ export async function ServerSession() {
         <p className="text-sm text-gray-500">No active session</p>
       )}
     </section>
-  );
+  )
 }
 
 function Pair({ k, v }: { k: string; v: string }) {
@@ -37,5 +37,5 @@ function Pair({ k, v }: { k: string; v: string }) {
       <span className="text-gray-500">{": "}</span>
       <span className="text-foreground">{v}</span>
     </span>
-  );
+  )
 }

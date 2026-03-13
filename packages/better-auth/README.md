@@ -29,8 +29,8 @@ yarn add @siws/better-auth
 ### Server Setup
 
 ```typescript
-import { betterAuth } from 'better-auth'
-import { siws } from '@siws/better-auth'
+import { betterAuth } from "better-auth"
+import { siws } from "@siws/better-auth"
 
 export const auth = betterAuth({
   database: {
@@ -38,7 +38,7 @@ export const auth = betterAuth({
   },
   plugins: [
     siws({
-      statement: 'Sign in to MyApp',
+      statement: "Sign in to MyApp",
       expirationTime: 600, // 10 minutes
     }),
   ],
@@ -48,8 +48,8 @@ export const auth = betterAuth({
 ### Client Setup
 
 ```typescript
-import { createAuthClient } from 'better-auth/client'
-import { siwsClient } from '@siws/better-auth/client'
+import { createAuthClient } from "better-auth/client"
+import { siwsClient } from "@siws/better-auth/client"
 
 const auth = createAuthClient({
   plugins: [siwsClient()],
@@ -58,7 +58,7 @@ const auth = createAuthClient({
 // 1. Get nonce and message to sign
 const { nonce, message } = await auth.siws.getNonce({
   address: walletAddress,
-  cluster: 'mainnet-beta',
+  cluster: "mainnet-beta",
 })
 
 // 2. Sign message with wallet
@@ -72,7 +72,7 @@ const { success, user, token } = await auth.siws.verify({
 })
 
 if (success) {
-  console.log('Authenticated!', user)
+  console.log("Authenticated!", user)
 }
 ```
 
@@ -83,14 +83,14 @@ if (success) {
 Server-side plugin factory. Returns a better-auth plugin.
 
 ```typescript
-import { siws } from '@siws/better-auth'
+import { siws } from "@siws/better-auth"
 
 const plugin = siws({
-  statement: 'Sign in to MyApp',
+  statement: "Sign in to MyApp",
   expirationTime: 300,
-  cluster: 'mainnet-beta',
-  resources: ['https://example.com/api'],
-  emailDomainName: 'siws.local',
+  cluster: "mainnet-beta",
+  resources: ["https://example.com/api"],
+  emailDomainName: "siws.local",
   anonymous: true,
 })
 ```
@@ -116,7 +116,7 @@ await client.siws.verify({ message, signature, address, cluster?, email? })
 Database schema definition for the `solanaAddress` table.
 
 ```typescript
-import { schema } from '@siws/better-auth'
+import { schema } from "@siws/better-auth"
 ```
 
 ### Types
@@ -130,9 +130,9 @@ import type {
   VerifyInput,
   VerifyResponse,
   Cluster,
-} from '@siws/better-auth'
+} from "@siws/better-auth"
 
-type Cluster = 'mainnet-beta' | 'devnet' | 'testnet'
+type Cluster = "mainnet-beta" | "devnet" | "testnet"
 
 interface SolanaAddress {
   id: string
@@ -161,15 +161,15 @@ interface VerifyResponse {
 
 ## Plugin Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `statement` | `string` | `undefined` | Human-readable statement displayed when signing |
-| `expirationTime` | `number` | `300` | Message expiration in seconds (5 minutes) |
-| `cluster` | `Cluster` | `'mainnet-beta'` | Default Solana cluster |
-| `resources` | `string[]` | `undefined` | Resource URIs to include in the message |
-| `emailDomainName` | `string` | `'siws.local'` | Domain for synthetic email addresses |
-| `anonymous` | `boolean` | `true` | Allow sign-up without email |
-| `schema` | `object` | `undefined` | Custom schema options for solanaAddress table |
+| Option            | Type       | Default          | Description                                     |
+| ----------------- | ---------- | ---------------- | ----------------------------------------------- |
+| `statement`       | `string`   | `undefined`      | Human-readable statement displayed when signing |
+| `expirationTime`  | `number`   | `300`            | Message expiration in seconds (5 minutes)       |
+| `cluster`         | `Cluster`  | `'mainnet-beta'` | Default Solana cluster                          |
+| `resources`       | `string[]` | `undefined`      | Resource URIs to include in the message         |
+| `emailDomainName` | `string`   | `'siws.local'`   | Domain for synthetic email addresses            |
+| `anonymous`       | `boolean`  | `true`           | Allow sign-up without email                     |
+| `schema`          | `object`   | `undefined`      | Custom schema options for solanaAddress table   |
 
 ## Endpoints
 
@@ -178,6 +178,7 @@ interface VerifyResponse {
 Request a nonce and SIWS message to sign.
 
 **Request Body:**
+
 ```typescript
 {
   address: string    // Solana wallet address (Base58)
@@ -186,9 +187,10 @@ Request a nonce and SIWS message to sign.
 ```
 
 **Response:**
+
 ```typescript
 {
-  nonce: string   // Cryptographic nonce
+  nonce: string // Cryptographic nonce
   message: string // SIWS message to sign
 }
 ```
@@ -198,6 +200,7 @@ Request a nonce and SIWS message to sign.
 Verify a signed message and create a session.
 
 **Request Body:**
+
 ```typescript
 {
   message: string    // The SIWS message that was signed
@@ -209,10 +212,11 @@ Verify a signed message and create a session.
 ```
 
 **Response:**
+
 ```typescript
 {
   success: boolean
-  token: string      // Session token
+  token: string // Session token
   user: {
     id: string
     address: string
@@ -225,14 +229,14 @@ Verify a signed message and create a session.
 
 The plugin creates a `solanaAddress` table with the following fields:
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | `string` | Primary key |
-| `userId` | `string` | Foreign key to user table (cascade delete) |
-| `address` | `string` | Solana wallet address |
-| `cluster` | `string` | Solana cluster (mainnet-beta, devnet, testnet) |
-| `isPrimary` | `boolean` | Whether this is the user's primary address |
-| `createdAt` | `date` | When the address was linked |
+| Field       | Type      | Description                                    |
+| ----------- | --------- | ---------------------------------------------- |
+| `id`        | `string`  | Primary key                                    |
+| `userId`    | `string`  | Foreign key to user table (cascade delete)     |
+| `address`   | `string`  | Solana wallet address                          |
+| `cluster`   | `string`  | Solana cluster (mainnet-beta, devnet, testnet) |
+| `isPrimary` | `boolean` | Whether this is the user's primary address     |
+| `createdAt` | `date`    | When the address was linked                    |
 
 A user can have multiple Solana addresses linked across different clusters.
 
@@ -247,9 +251,9 @@ A user can have multiple Solana addresses linked across different clusters.
 ```typescript
 // Recommended production configuration
 siws({
-  statement: 'Sign in to MyApp',
-  expirationTime: 300,  // 5 minutes
-  anonymous: false,     // Require email for account recovery
+  statement: "Sign in to MyApp",
+  expirationTime: 300, // 5 minutes
+  anonymous: false, // Require email for account recovery
 })
 ```
 

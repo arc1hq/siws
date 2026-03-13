@@ -1,4 +1,4 @@
-import { SiwsError, SiwsErrorCode } from '@/errors'
+import { SiwsError, SiwsErrorCode } from "@/errors"
 import {
   DOMAIN_REGEX,
   URI_REGEX,
@@ -9,25 +9,22 @@ import {
   SIWS_VERSION,
   NONCE_MIN_LENGTH,
   PRINTABLE_ASCII_REGEX,
-} from '@/constants'
-import { isValidISO8601 } from '@/utils'
-import type { Cluster, SiwsMessageFields } from '@/types'
+} from "@/constants"
+import { isValidISO8601 } from "@/utils"
+import type { Cluster, SiwsMessageFields } from "@/types"
 
 export function validateDomain(domain: string): void {
   if (!domain || !DOMAIN_REGEX.test(domain)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_DOMAIN,
-      `Invalid domain: ${domain}`
+      `Invalid domain: ${domain}`,
     )
   }
 }
 
 export function validateAddress(address: string): void {
   if (!address) {
-    throw new SiwsError(
-      SiwsErrorCode.INVALID_ADDRESS,
-      'Address is required'
-    )
+    throw new SiwsError(SiwsErrorCode.INVALID_ADDRESS, "Address is required")
   }
 
   const isValidLength =
@@ -37,17 +34,14 @@ export function validateAddress(address: string): void {
   if (!isValidLength || !BASE58_CHAR_REGEX.test(address)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_ADDRESS,
-      `Invalid Solana address: ${address}`
+      `Invalid Solana address: ${address}`,
     )
   }
 }
 
 export function validateUri(uri: string): void {
   if (!uri || !URI_REGEX.test(uri)) {
-    throw new SiwsError(
-      SiwsErrorCode.INVALID_URI,
-      `Invalid URI: ${uri}`
-    )
+    throw new SiwsError(SiwsErrorCode.INVALID_URI, `Invalid URI: ${uri}`)
   }
 }
 
@@ -57,7 +51,7 @@ export function validateVersion(version: string): void {
       SiwsErrorCode.INVALID_VERSION,
       `Invalid version`,
       SIWS_VERSION,
-      version
+      version,
     )
   }
 }
@@ -66,7 +60,7 @@ export function validateNonce(nonce: string): void {
   if (!nonce || nonce.length < NONCE_MIN_LENGTH || !NONCE_REGEX.test(nonce)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_NONCE,
-      `Invalid nonce: must be at least ${NONCE_MIN_LENGTH} alphanumeric characters`
+      `Invalid nonce: must be at least ${NONCE_MIN_LENGTH} alphanumeric characters`,
     )
   }
 }
@@ -75,7 +69,7 @@ export function validateTimestamp(timestamp: string): void {
   if (!timestamp || !isValidISO8601(timestamp)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_TIMESTAMP,
-      `Invalid timestamp: ${timestamp}`
+      `Invalid timestamp: ${timestamp}`,
     )
   }
 }
@@ -84,13 +78,13 @@ export function validateStatement(statement: string): void {
   if (!statement || statement.length === 0) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_STATEMENT,
-      'Statement must not be empty'
+      "Statement must not be empty",
     )
   }
   if (!PRINTABLE_ASCII_REGEX.test(statement)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_STATEMENT,
-      'Statement must contain only printable ASCII characters (no newlines or control characters)'
+      "Statement must contain only printable ASCII characters (no newlines or control characters)",
     )
   }
 }
@@ -99,7 +93,7 @@ export function validateRequestId(requestId: string): void {
   if (!requestId || !PRINTABLE_ASCII_REGEX.test(requestId)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_REQUEST_ID,
-      'Request ID must contain only printable ASCII characters'
+      "Request ID must contain only printable ASCII characters",
     )
   }
 }
@@ -109,8 +103,8 @@ export function validateCluster(cluster: string): asserts cluster is Cluster {
     throw new SiwsError(
       SiwsErrorCode.INVALID_CLUSTER,
       `Invalid cluster: ${cluster}`,
-      CLUSTERS.join(' | '),
-      cluster
+      CLUSTERS.join(" | "),
+      cluster,
     )
   }
 }
@@ -119,7 +113,7 @@ export function validateResource(resource: string): void {
   if (!resource || !URI_REGEX.test(resource)) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_RESOURCE,
-      `Invalid resource URI: ${resource}`
+      `Invalid resource URI: ${resource}`,
     )
   }
 }

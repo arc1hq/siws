@@ -1,5 +1,5 @@
-import type { BetterAuthClientPlugin } from 'better-auth/client'
-import type { Cluster, NonceResponse, VerifyResponse } from './types'
+import type { BetterAuthClientPlugin } from "better-auth/client"
+import type { Cluster, NonceResponse, VerifyResponse } from "./types"
 
 /**
  * Client-side plugin for Sign In With Solana.
@@ -30,8 +30,8 @@ import type { Cluster, NonceResponse, VerifyResponse } from './types'
  */
 export function siwsClient() {
   return {
-    id: 'siws',
-    $InferServerPlugin: {} as ReturnType<typeof import('./index').siws>,
+    id: "siws",
+    $InferServerPlugin: {} as ReturnType<typeof import("./index").siws>,
     getActions($fetch) {
       return {
         siws: {
@@ -39,8 +39,8 @@ export function siwsClient() {
            * Request a nonce and SIWS message to sign.
            */
           getNonce: async (input: { address: string; cluster?: Cluster }) => {
-            const response = await $fetch<NonceResponse>('/siws/nonce', {
-              method: 'POST',
+            const response = await $fetch<NonceResponse>("/siws/nonce", {
+              method: "POST",
               body: input,
             })
             return response
@@ -56,8 +56,8 @@ export function siwsClient() {
             cluster?: Cluster
             email?: string
           }) => {
-            const response = await $fetch<VerifyResponse>('/siws/verify', {
-              method: 'POST',
+            const response = await $fetch<VerifyResponse>("/siws/verify", {
+              method: "POST",
               body: input,
             })
             return response

@@ -1,5 +1,10 @@
-import bs58 from 'bs58'
-import { BASE58_ALPHABET, DEFAULT_NONCE_LENGTH, NONCE_MIN_LENGTH, ISO8601_REGEX } from '@/constants'
+import bs58 from "bs58"
+import {
+  BASE58_ALPHABET,
+  DEFAULT_NONCE_LENGTH,
+  NONCE_MIN_LENGTH,
+  ISO8601_REGEX,
+} from "@/constants"
 
 export function encodeBase58(bytes: Uint8Array): string {
   return bs58.encode(bytes)
@@ -36,7 +41,7 @@ export function generateNonce(length: number = DEFAULT_NONCE_LENGTH): string {
     }
   }
 
-  return result.join('')
+  return result.join("")
 }
 
 export function isValidISO8601(dateStr: string): boolean {

@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest'
-import { parseMessage } from '@/parser'
-import { SiwsError, SiwsErrorCode } from '@/errors'
+import { describe, it, expect } from "vitest"
+import { parseMessage } from "@/parser"
+import { SiwsError, SiwsErrorCode } from "@/errors"
 
-const VALID_ADDRESS = '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU'
+const VALID_ADDRESS = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
 
-describe('parseMessage', () => {
-  describe('valid messages', () => {
-    it('parses minimal message with statement', () => {
+describe("parseMessage", () => {
+  describe("valid messages", () => {
+    it("parses minimal message with statement", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -20,21 +20,21 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.domain).toBe('example.com')
+      expect(result.domain).toBe("example.com")
       expect(result.address).toBe(VALID_ADDRESS)
-      expect(result.statement).toBe('Sign in to Example')
-      expect(result.uri).toBe('https://example.com/auth')
-      expect(result.version).toBe('1')
-      expect(result.nonce).toBe('k8sj2n4b')
-      expect(result.issuedAt).toBe('2024-01-15T12:00:00Z')
-      expect(result.cluster).toBe('mainnet-beta')
+      expect(result.statement).toBe("Sign in to Example")
+      expect(result.uri).toBe("https://example.com/auth")
+      expect(result.version).toBe("1")
+      expect(result.nonce).toBe("k8sj2n4b")
+      expect(result.issuedAt).toBe("2024-01-15T12:00:00Z")
+      expect(result.cluster).toBe("mainnet-beta")
       expect(result.expirationTime).toBeUndefined()
       expect(result.notBefore).toBeUndefined()
       expect(result.requestId).toBeUndefined()
       expect(result.resources).toBeUndefined()
     })
 
-    it('parses message without statement', () => {
+    it("parses message without statement", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -46,17 +46,17 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.domain).toBe('example.com')
+      expect(result.domain).toBe("example.com")
       expect(result.address).toBe(VALID_ADDRESS)
       expect(result.statement).toBeUndefined()
-      expect(result.uri).toBe('https://example.com/auth')
-      expect(result.version).toBe('1')
-      expect(result.nonce).toBe('k8sj2n4b')
-      expect(result.issuedAt).toBe('2024-01-15T12:00:00Z')
-      expect(result.cluster).toBe('mainnet-beta')
+      expect(result.uri).toBe("https://example.com/auth")
+      expect(result.version).toBe("1")
+      expect(result.nonce).toBe("k8sj2n4b")
+      expect(result.issuedAt).toBe("2024-01-15T12:00:00Z")
+      expect(result.cluster).toBe("mainnet-beta")
     })
 
-    it('parses complete message with all fields', () => {
+    it("parses complete message with all fields", () => {
       const message = `app.example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -76,24 +76,26 @@ Resources:
 
       const result = parseMessage(message)
 
-      expect(result.domain).toBe('app.example.com')
+      expect(result.domain).toBe("app.example.com")
       expect(result.address).toBe(VALID_ADDRESS)
-      expect(result.statement).toBe('Access your dashboard and manage settings.')
-      expect(result.uri).toBe('https://app.example.com/api/auth')
-      expect(result.version).toBe('1')
-      expect(result.nonce).toBe('f7k2m9p4x1')
-      expect(result.issuedAt).toBe('2024-01-15T12:00:00.000Z')
-      expect(result.expirationTime).toBe('2024-01-15T12:10:00.000Z')
-      expect(result.notBefore).toBe('2024-01-15T12:00:00.000Z')
-      expect(result.requestId).toBe('req_abc123')
-      expect(result.cluster).toBe('mainnet-beta')
+      expect(result.statement).toBe(
+        "Access your dashboard and manage settings.",
+      )
+      expect(result.uri).toBe("https://app.example.com/api/auth")
+      expect(result.version).toBe("1")
+      expect(result.nonce).toBe("f7k2m9p4x1")
+      expect(result.issuedAt).toBe("2024-01-15T12:00:00.000Z")
+      expect(result.expirationTime).toBe("2024-01-15T12:10:00.000Z")
+      expect(result.notBefore).toBe("2024-01-15T12:00:00.000Z")
+      expect(result.requestId).toBe("req_abc123")
+      expect(result.cluster).toBe("mainnet-beta")
       expect(result.resources).toEqual([
-        'https://app.example.com/api/profile',
-        'https://app.example.com/api/settings',
+        "https://app.example.com/api/profile",
+        "https://app.example.com/api/settings",
       ])
     })
 
-    it('parses message with localhost domain', () => {
+    it("parses message with localhost domain", () => {
       const message = `localhost:3000 wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -105,10 +107,10 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.domain).toBe('localhost:3000')
+      expect(result.domain).toBe("localhost:3000")
     })
 
-    it('parses message with devnet cluster', () => {
+    it("parses message with devnet cluster", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -120,10 +122,10 @@ Cluster: devnet`
 
       const result = parseMessage(message)
 
-      expect(result.cluster).toBe('devnet')
+      expect(result.cluster).toBe("devnet")
     })
 
-    it('parses message with testnet cluster', () => {
+    it("parses message with testnet cluster", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -135,10 +137,10 @@ Cluster: testnet`
 
       const result = parseMessage(message)
 
-      expect(result.cluster).toBe('testnet')
+      expect(result.cluster).toBe("testnet")
     })
 
-    it('parses message with single resource', () => {
+    it("parses message with single resource", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -152,10 +154,10 @@ Resources:
 
       const result = parseMessage(message)
 
-      expect(result.resources).toEqual(['https://example.com/api/resource'])
+      expect(result.resources).toEqual(["https://example.com/api/resource"])
     })
 
-    it('parses message with milliseconds in timestamp', () => {
+    it("parses message with milliseconds in timestamp", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -167,20 +169,20 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.issuedAt).toBe('2024-01-15T12:00:00.123Z')
+      expect(result.issuedAt).toBe("2024-01-15T12:00:00.123Z")
     })
   })
 
-  describe('invalid messages', () => {
-    it('throws on message too short', () => {
+  describe("invalid messages", () => {
+    it("throws on message too short", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('Message is too short')
+      expect(() => parseMessage(message)).toThrow("Message is too short")
     })
 
-    it('throws on missing domain line suffix', () => {
+    it("throws on missing domain line suffix", () => {
       const message = `example.com wants you to sign in:
 ${VALID_ADDRESS}
 
@@ -190,10 +192,10 @@ Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('missing domain line')
+      expect(() => parseMessage(message)).toThrow("missing domain line")
     })
 
-    it('throws on empty address', () => {
+    it("throws on empty address", () => {
       const message = `example.com wants you to sign in with your Solana account:
 
 URI: https://example.com/auth
@@ -202,10 +204,10 @@ Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('missing address')
+      expect(() => parseMessage(message)).toThrow("missing address")
     })
 
-    it('throws on missing URI field', () => {
+    it("throws on missing URI field", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -214,10 +216,10 @@ Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('Missing required field: URI')
+      expect(() => parseMessage(message)).toThrow("Missing required field: URI")
     })
 
-    it('throws on missing Version field', () => {
+    it("throws on missing Version field", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -226,10 +228,12 @@ Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('Missing required field: Version')
+      expect(() => parseMessage(message)).toThrow(
+        "Missing required field: Version",
+      )
     })
 
-    it('throws on missing Nonce field', () => {
+    it("throws on missing Nonce field", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -238,10 +242,12 @@ Version: 1
 Issued At: 2024-01-15T12:00:00Z`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('Missing required field: Nonce')
+      expect(() => parseMessage(message)).toThrow(
+        "Missing required field: Nonce",
+      )
     })
 
-    it('throws on missing Issued At field', () => {
+    it("throws on missing Issued At field", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -250,10 +256,12 @@ Version: 1
 Nonce: abcd1234`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('Missing required field: Issued At')
+      expect(() => parseMessage(message)).toThrow(
+        "Missing required field: Issued At",
+      )
     })
 
-    it('throws on multiline statement', () => {
+    it("throws on multiline statement", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -266,10 +274,12 @@ Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z`
 
       expect(() => parseMessage(message)).toThrow(SiwsError)
-      expect(() => parseMessage(message)).toThrow('Statement must be a single line')
+      expect(() => parseMessage(message)).toThrow(
+        "Statement must be a single line",
+      )
     })
 
-    it('throws on missing cluster', () => {
+    it("throws on missing cluster", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -283,12 +293,14 @@ Issued At: 2024-01-15T12:00:00Z`
         parseMessage(message)
       } catch (error) {
         expect(error).toBeInstanceOf(SiwsError)
-        expect((error as SiwsError).code).toBe(SiwsErrorCode.MISSING_REQUIRED_FIELD)
-        expect((error as SiwsError).message).toContain('Cluster')
+        expect((error as SiwsError).code).toBe(
+          SiwsErrorCode.MISSING_REQUIRED_FIELD,
+        )
+        expect((error as SiwsError).message).toContain("Cluster")
       }
     })
 
-    it('throws on invalid cluster', () => {
+    it("throws on invalid cluster", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -307,7 +319,7 @@ Cluster: invalid-cluster`
       }
     })
 
-    it('throws on malformed resource line', () => {
+    it("throws on malformed resource line", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -324,8 +336,8 @@ https://example.com/api/resource`
     })
   })
 
-  describe('edge cases', () => {
-    it('handles empty resources section', () => {
+  describe("edge cases", () => {
+    it("handles empty resources section", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -341,7 +353,7 @@ Resources:`
       expect(result.resources).toBeUndefined()
     })
 
-    it('handles statement with special characters', () => {
+    it("handles statement with special characters", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -355,10 +367,12 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.statement).toBe('Sign in to access $100 worth of tokens! (Limited time offer)')
+      expect(result.statement).toBe(
+        "Sign in to access $100 worth of tokens! (Limited time offer)",
+      )
     })
 
-    it('handles request ID with special characters', () => {
+    it("handles request ID with special characters", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -371,10 +385,10 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.requestId).toBe('req-123_abc.456')
+      expect(result.requestId).toBe("req-123_abc.456")
     })
 
-    it('preserves field order independence', () => {
+    it("preserves field order independence", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
@@ -386,9 +400,9 @@ Cluster: mainnet-beta`
 
       const result = parseMessage(message)
 
-      expect(result.uri).toBe('https://example.com/auth')
-      expect(result.nonce).toBe('abcd1234')
-      expect(result.version).toBe('1')
+      expect(result.uri).toBe("https://example.com/auth")
+      expect(result.nonce).toBe("abcd1234")
+      expect(result.version).toBe("1")
     })
   })
 })

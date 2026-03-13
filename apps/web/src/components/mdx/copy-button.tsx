@@ -1,13 +1,13 @@
-'use client'
+"use client"
 
-import { cn } from '@ui/lib/utils'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/shadcn/tooltip'
-import { Check, Copy } from 'lucide-react'
-import React, { useState } from 'react'
+import { cn } from "@ui/lib/utils"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/shadcn/tooltip"
+import { Check, Copy } from "lucide-react"
+import React, { useState } from "react"
 
 export const CopyButton = ({
   children,
-  className
+  className,
 }: {
   children: React.ReactNode
   className?: string
@@ -25,19 +25,22 @@ export const CopyButton = ({
   }
 
   const extractSourceCode = (node: React.ReactNode): string => {
-    if (typeof node === 'string') {
+    if (typeof node === "string") {
       return node
     }
     if (Array.isArray(node)) {
-      return node.map(extractSourceCode).join('')
+      return node.map(extractSourceCode).join("")
     }
     if (React.isValidElement(node)) {
       const { props } = node
       // @ts-expect-error
-      const children = React.Children.map(props.children, extractSourceCode)?.join('')
+      const children = React.Children.map(
+        props.children,
+        extractSourceCode,
+      )?.join("")
       return `${children}`
     }
-    return ''
+    return ""
   }
 
   return (
@@ -47,7 +50,10 @@ export const CopyButton = ({
           <button
             disabled={isCopied}
             onClick={copy}
-            className={cn('text-muted-foreground cursor-pointer [&_svg]:size-4', className)}
+            className={cn(
+              "text-muted-foreground cursor-pointer [&_svg]:size-4",
+              className,
+            )}
             type="button"
           />
         }
@@ -55,7 +61,7 @@ export const CopyButton = ({
         {isCopied ? <Check strokeWidth={1.5} /> : <Copy strokeWidth={1.5} />}
       </TooltipTrigger>
       <TooltipContent side="right" sideOffset={10}>
-        {isCopied ? 'Copied' : 'Copy'}
+        {isCopied ? "Copied" : "Copy"}
       </TooltipContent>
     </Tooltip>
   )
