@@ -9,6 +9,8 @@ import { ThemeToggler } from '@/components/theme/toggler'
 import { CommandMenu } from '@/components/command-menu'
 import { BookOpen, Package } from 'lucide-react'
 import { SectionSwitcher, type SectionItem } from './section-switcher'
+import { siteConfig } from '@/lib/site'
+import GitHubIcon from '@siws/icons/GitHubIcon'
 
 const sectionItems: SectionItem[] = [
   {
@@ -69,6 +71,9 @@ export function Navbar() {
       </div>
       <div className="ml-auto flex items-center gap-2 pr-3">
         <CommandMenu />
+        <Button variant="ghost" size="icon" nativeButton={false} className="ml-2" render={<a href={siteConfig.links.github} />}>
+          <GitHubIcon className="size-3.5" />
+        </Button>
         <ThemeToggler />
       </div>
     </nav>
