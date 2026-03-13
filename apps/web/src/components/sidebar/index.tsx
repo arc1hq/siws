@@ -28,7 +28,7 @@ export function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
       <nav ref={navRef} className="flex flex-col gap-6 px-2 py-4 text-sm">
         {navSections.map((section) => (
           <div key={section.title} className="flex flex-col gap-1">
-            <p className="px-3 mb-1 font-medium text-sm">{section.title}</p>
+            <p className="px-3 mb-1 font-medium text-xs">{section.title}</p>
             <div className="flex flex-col">
               {section.items.map((item) => {
                 const isActive = pathname === item.href

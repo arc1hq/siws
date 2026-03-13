@@ -3,6 +3,7 @@ import { CodeBlock } from "./codeblock";
 import Image, { type ImageProps } from "next/image";
 import { Button } from "@ui/shadcn/button";
 import Link from "next/link";
+import Installation from "@/components/installation";
 
 export const mdxComponents = {
   h1: ({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
@@ -177,4 +178,5 @@ export const mdxComponents = {
     />
   ),
   Button,
+  Installation,
 };

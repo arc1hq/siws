@@ -38,7 +38,7 @@ function groupDocs(): NavSection[] {
     })
   }
 
-  const categoryOrder = ["Getting Started", "Getting-started", "Packages"]
+  const categoryOrder = ["Getting Started", "Packages"]
   const sections: NavSection[] = []
 
   for (const cat of categoryOrder) {

@@ -6,7 +6,7 @@ const linkGroups = [
   {
     title: 'Resources',
     links: [
-      { label: 'Documentation', href: '/docs/introduction' },
+      { label: 'Documentation', href: '/docs/what-is-siws' },
       { label: 'GitHub', href: GITHUB_REPO, external: true },
     ],
   },

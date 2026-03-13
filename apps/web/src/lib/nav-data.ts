@@ -12,9 +12,9 @@ export const navSections: NavSection[] = [
   {
     title: 'Getting Started',
     items: [
-      { href: '/docs/introduction', title: 'Introduction' },
+      { href: '/docs/what-is-siws', title: 'What is SIWS?' },
       { href: '/docs/specification', title: 'Specification' },
-      { href: '/docs/getting-started/installation', title: 'Installation' },
+      { href: '/docs/installation', title: 'Installation' },
     ],
   },
   {
