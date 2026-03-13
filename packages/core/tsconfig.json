@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/library.json",
+  "extends": "@siws/typescript-config/library.json",
   "compilerOptions": {
     "outDir": "dist",
     "lib": ["ES2022", "DOM"],

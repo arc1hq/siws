@@ -52,8 +52,8 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@siws/eslint-config": "workspace:*",
+    "@siws/typescript-config": "workspace:*",
     "tsup": "^8.0.0",
     "typescript": "^5.9.2",
     "vitest": "^2.0.0"
