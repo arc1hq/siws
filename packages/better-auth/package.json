@@ -68,8 +68,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@siws/eslint-config": "workspace:*",
+    "@siws/typescript-config": "workspace:*",
     "better-auth": "^1.2.8",
     "tsup": "^8.0.0",
     "typescript": "^5.9.2",
