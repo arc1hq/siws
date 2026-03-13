@@ -67,6 +67,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
       - run: npm publish --access public --provenance
@@ -91,6 +92,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
       - run: pnpm --filter @siws/better-auth build
