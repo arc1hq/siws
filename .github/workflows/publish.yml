@@ -66,12 +66,15 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
       - run: npm publish --access public --provenance
         working-directory: packages/core
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-better-auth:
     needs: [check, check-versions, publish-core]
@@ -91,6 +94,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
 
       - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
@@ -98,3 +102,5 @@ jobs:
       - run: pnpm --filter @siws/better-auth build
       - run: npm publish --access public --provenance
         working-directory: packages/better-auth
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
