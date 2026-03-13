@@ -11,6 +11,7 @@ import { BookOpen, Package } from "lucide-react"
 import { SectionSwitcher, type SectionItem } from "./section-switcher"
 import { siteConfig } from "@/lib/site"
 import GitHubIcon from "@siws/icons/GitHubIcon"
+import NpmIcon from "@siws/icons/NpmIcon"
 
 const sectionItems: SectionItem[] = [
   {
@@ -86,6 +87,16 @@ export function Navbar() {
         >
           <GitHubIcon className="size-3.5" />
         </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          nativeButton={false}
+          className="ml-2"
+          render={<a href={siteConfig.links.npm} />}
+        >
+          <NpmIcon className="size-3.5" />
+        </Button>
+
         <ThemeToggler />
       </div>
     </nav>

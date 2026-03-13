@@ -19,5 +19,6 @@ export const siteConfig = {
   links: {
     github: "https://github.com/arc1hq/siws",
     x: "https://x.com/rds_agi",
+    npm: "https://www.npmjs.com/org/siws"
   },
 } as const
