@@ -136,3 +136,22 @@
 .steps>h3 {
   @apply mt-8 mb-4 text-base font-semibold;
 }
+
+@keyframes solana-gradient {
+  0% { background-position: 0% 50%; }
+  100% { background-position: -200% 50%; }
+}
+
+.solana-hover {
+  background: linear-gradient(to right, #9945FF, #14F195, #9945FF);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: inherit;
+  animation: solana-gradient 3s linear infinite;
+  transition: color 0.3s ease;
+}
+
+.solana-hover:hover {
+  color: transparent;
+}
