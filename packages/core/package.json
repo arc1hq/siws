@@ -1,17 +1,17 @@
 {
   "name": "@siws/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "description": "Core library for Sign In With Solana",
   "author": "osiws contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/osiws/siws.git",
+    "url": "git+https://github.com/arc1hq/siws.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/osiws/siws/tree/main/packages/core#readme",
+  "homepage": "https://github.com/arc1hq/siws/tree/main/packages/core#readme",
   "bugs": {
-    "url": "https://github.com/osiws/siws/issues"
+    "url": "https://github.com/arc1hq/siws/issues"
   },
   "keywords": [
     "solana",

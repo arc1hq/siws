@@ -4,12 +4,12 @@ import { Check, Copy } from 'lucide-react'
 import GitHubIcon from '@siws/icons/GitHubIcon'
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
+import { siteConfig } from '@/lib/site'
 
 const PACKAGES: Record<string, string> = {
   core: '@siws/core',
   'better-auth': '@siws/better-auth',
 }
-const GITHUB_URL = 'https://github.com/osiws/siws'
 
 function getPackageForPath(pathname: string): string {
   if (pathname.startsWith('/docs/packages/better-auth')) return PACKAGES['better-auth']!
@@ -46,7 +46,7 @@ export function TocPromoCard() {
         </span>
       </button>
       <a
-        href={GITHUB_URL}
+        href={siteConfig.links.github}
         target="_blank"
         rel="noopener noreferrer"
         className="ml-auto pr-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground/70 transition-colors hover:text-foreground"

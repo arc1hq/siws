@@ -17,7 +17,7 @@ export const siteConfig = {
     'blockchain',
   ] as string[],
   links: {
-    github: 'https://github.com/osiws/siws',
+    github: 'https://github.com/arc1hq/siws',
     x: 'https://x.com/rds_agi',
   },
 } as const

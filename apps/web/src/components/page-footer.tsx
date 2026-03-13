@@ -1,13 +1,12 @@
 import Link from 'next/link'
-
-const GITHUB_REPO = 'https://github.com/osiws/siws'
+import { siteConfig } from '@/lib/site'
 
 const linkGroups = [
   {
     title: 'Resources',
     links: [
       { label: 'Documentation', href: '/docs/what-is-siws' },
-      { label: 'GitHub', href: GITHUB_REPO, external: true },
+      { label: 'GitHub', href: siteConfig.links.github, external: true },
     ],
   },
   {
@@ -50,7 +49,7 @@ export function PageFooter({ editPath }: { editPath?: string }) {
       {editPath && (
         <div className="mt-8 pt-4 border-t border-border">
           <Link
-            href={`${GITHUB_REPO}/edit/main/${editPath}`}
+            href={`${siteConfig.links.github}/edit/main/${editPath}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"

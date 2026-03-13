@@ -1,17 +1,17 @@
 {
   "name": "@siws/better-auth",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "description": "Sign In With Solana plugin for better-auth",
   "author": "osiws contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/osiws/siws.git",
+    "url": "git+https://github.com/arc1hq/siws.git",
     "directory": "packages/better-auth"
   },
-  "homepage": "https://github.com/osiws/siws/tree/main/packages/better-auth#readme",
+  "homepage": "https://github.com/arc1hq/siws/tree/main/packages/better-auth#readme",
   "bugs": {
-    "url": "https://github.com/osiws/siws/issues"
+    "url": "https://github.com/arc1hq/siws/issues"
   },
   "keywords": [
     "solana",
