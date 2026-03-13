@@ -4,7 +4,7 @@ excerpt: Core library for Sign In With Solana -- message building, parsing, and 
 rank: 0
 ---
 
-The core package implements the [SIWS specification](/docs/specification) with message construction, parsing, validation, and cryptographic verification.
+Implements the [SIWS specification](/docs/specification) -- message construction, parsing, validation, and signature verification.
 
 ## SiwsMessage
 
@@ -39,9 +39,9 @@ const fields = message.toFields()
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `static parse(message: string)` | `SiwsMessage` | Parse a raw message string into a validated `SiwsMessage` |
-| `toMessage()` | `string` | Serialize to the canonical message string format |
-| `toFields()` | `SiwsMessageFields` | Extract all fields as a plain object |
+| `static parse(message: string)` | `SiwsMessage` | Parse and validate a raw message string |
+| `toMessage()` | `string` | Serialize to the canonical string format |
+| `toFields()` | `SiwsMessageFields` | Extract fields as a plain object |
 
 ## SiwsMessageBuilder
 
@@ -67,23 +67,23 @@ const message = new SiwsMessageBuilder()
 
 | Method | Parameter | Description |
 |--------|-----------|-------------|
-| `domain(domain)` | `string` | Set the requesting domain |
-| `address(address)` | `string` | Set the Solana wallet address |
-| `uri(uri)` | `string` | Set the authentication URI |
-| `nonce(nonce)` | `string` | Set the replay-protection nonce |
-| `issuedAt(issuedAt)` | `string \| Date` | Set the message creation time |
-| `statement(statement)` | `string` | Set the human-readable statement |
-| `expirationTime(time)` | `string \| Date` | Set message expiration |
-| `notBefore(time)` | `string \| Date` | Set earliest validity time |
-| `requestId(id)` | `string` | Set application-specific request ID |
-| `cluster(cluster)` | `Cluster` | Set the Solana cluster |
-| `resources(resources)` | `string[]` | Set resource URIs |
-| `addResource(resource)` | `string` | Append a single resource URI |
-| `build()` | -- | Build and validate, returns `SiwsMessage` |
+| `domain(domain)` | `string` | Requesting domain |
+| `address(address)` | `string` | Solana wallet address |
+| `uri(uri)` | `string` | Authentication URI |
+| `nonce(nonce)` | `string` | Replay-protection nonce |
+| `issuedAt(issuedAt)` | `string \| Date` | Message creation time |
+| `statement(statement)` | `string` | Human-readable statement |
+| `expirationTime(time)` | `string \| Date` | Message expiration |
+| `notBefore(time)` | `string \| Date` | Earliest validity time |
+| `requestId(id)` | `string` | Application-specific request ID |
+| `cluster(cluster)` | `Cluster` | Solana cluster |
+| `resources(resources)` | `string[]` | Resource URIs |
+| `addResource(resource)` | `string` | Append a resource URI |
+| `build()` | -- | Validate and return `SiwsMessage` |
 
 ## verifySignature
 
-Verify an Ed25519 signature against a SIWS message.
+Verify a signature against a SIWS message.
 
 ```ts
 import { verifySignature } from '@siws/core'

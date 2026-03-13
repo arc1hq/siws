@@ -4,7 +4,7 @@ excerpt: Drop-in Sign In With Solana plugin for better-auth with server and clie
 rank: 1
 ---
 
-The `@siws/better-auth` package provides a [better-auth](https://www.better-auth.com/) plugin that handles the complete Solana wallet authentication flow -- nonce generation, message building, signature verification, user management, and session creation.
+A [better-auth](https://www.better-auth.com/) plugin that handles the complete SIWS flow -- nonce generation, message building, signature verification, user management, and session creation.
 
 ## Server Plugin
 
@@ -28,13 +28,13 @@ export const auth = betterAuth({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `statement` | `string?` | -- | Human-readable statement shown to users when signing |
-| `expirationTime` | `number?` | `300` | Message expiration in seconds |
+| `statement` | `string?` | -- | Statement shown when signing |
+| `expirationTime` | `number?` | `300` | Expiration in seconds |
 | `cluster` | `Cluster?` | `'mainnet-beta'` | Default Solana cluster |
-| `resources` | `string[]?` | -- | Resource URIs to include in messages |
-| `emailDomainName` | `string?` | `'siws.local'` | Domain for synthetic emails in anonymous mode |
-| `anonymous` | `boolean?` | `true` | Allow sign-up without email (generates synthetic email) |
-| `schema` | `object?` | -- | Custom schema options for the `solanaAddress` table |
+| `resources` | `string[]?` | -- | Resource URIs to include |
+| `emailDomainName` | `string?` | `'siws.local'` | Domain for synthetic emails |
+| `anonymous` | `boolean?` | `true` | Allow sign-up without email |
+| `schema` | `object?` | -- | Custom `solanaAddress` table schema |
 
 ## Client Plugin
 
@@ -51,7 +51,7 @@ export const auth = createAuthClient({
 
 #### `auth.siws.getNonce(input)`
 
-Request a nonce and pre-built SIWS message for signing.
+Request a nonce and pre-built message for signing.
 
 ```ts
 const { nonce, message } = await auth.siws.getNonce({
@@ -76,7 +76,7 @@ const { nonce, message } = await auth.siws.getNonce({
 
 #### `auth.siws.verify(input)`
 
-Verify a signed message and create a session.
+Verify a signature and create a session.
 
 ```ts
 const result = await auth.siws.verify({
@@ -97,10 +97,10 @@ if (result.success) {
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `message` | `string` | Yes | The SIWS message that was signed |
-| `signature` | `string` | Yes | Base58-encoded Ed25519 signature |
+| `message` | `string` | Yes | The signed SIWS message |
+| `signature` | `string` | Yes | Base58-encoded signature |
 | `address` | `string` | Yes | Solana wallet address |
-| `cluster` | `Cluster?` | No | Solana cluster override |
+| `cluster` | `Cluster?` | No | Cluster override |
 | `email` | `string?` | No* | User email (*required if `anonymous: false`) |
 
 **Response:**
@@ -117,8 +117,8 @@ The plugin registers two API endpoints:
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/api/auth/siws/nonce` | Generate nonce and SIWS message |
-| `POST` | `/api/auth/siws/verify` | Verify signature and create session |
+| `POST` | `/api/auth/siws/nonce` | Generate nonce and message |
+| `POST` | `/api/auth/siws/verify` | Verify and create session |
 
 ## Database Schema
 

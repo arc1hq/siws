@@ -4,21 +4,19 @@ excerpt: The full SIWS message format specification, including field definitions
 rank: 1
 ---
 
-A standard message format and verification process for authenticating Solana wallet owners.
-
 ## Abstract
 
-This specification defines a method for Solana wallet owners to authenticate with off-chain services by signing a standardized message format. It enables applications to verify wallet ownership without requiring on-chain transactions, providing a decentralized alternative to traditional authentication.
+This specification defines a standardized message format and Ed25519 verification process that lets Solana wallet owners authenticate with off-chain services without on-chain transactions.
 
 ## Motivation
 
-Solana wallets are widely deployed for managing digital assets, yet no standardized method exists for using them as authentication credentials. Existing implementations vary significantly, resulting in:
+Solana wallets are widely deployed, yet no standard exists for using them as authentication credentials. Ad-hoc implementations lead to:
 
-- Inconsistent user experiences across applications
-- Security vulnerabilities arising from ad-hoc implementations
-- Lack of interoperability between authentication systems
+- Inconsistent user experiences
+- Security vulnerabilities
+- Lack of interoperability
 
-This specification addresses these issues by defining a secure, human-readable message format and verification process.
+This specification addresses these issues with a secure, human-readable message format and verification process.
 
 ## Terminology
 
@@ -34,7 +32,7 @@ Additional terms:
 
 A SIWS message MUST conform to the following structure:
 
-```
+```txt
 ${domain} wants you to sign in with your Solana account:
 ${address}
 
@@ -80,56 +78,56 @@ Resources:
 
 ### domain
 
-The `domain` MUST be an RFC 3986 authority matching the origin requesting authentication. It MUST NOT include a URI scheme or path component. Relying parties MUST reject messages where `domain` does not match the expected value.
+RFC 3986 authority matching the requesting origin. MUST NOT include a scheme or path. Relying parties MUST reject mismatched domains.
 
 ### address
 
-The `address` MUST be a Base58-encoded Ed25519 public key (32 bytes, 43-44 characters encoded). The signature MUST be verified against this public key.
+Base58-encoded Ed25519 public key (32 bytes, 43-44 characters). The signature MUST be verified against this key.
 
 ### uri
 
-The `uri` MUST be a valid RFC 3986 URI. It SHOULD match the endpoint receiving the authentication request.
+Valid RFC 3986 URI. SHOULD match the endpoint receiving the authentication request.
 
 ### version
 
-The `version` MUST be `1` for messages conforming to this specification.
+MUST be `1` for this specification.
 
 ### nonce
 
-The `nonce` MUST contain at least 8 alphanumeric characters generated using a cryptographically secure random number generator. Relying parties MUST:
+At least 8 alphanumeric characters from a CSPRNG. Relying parties MUST:
 
 1. Generate a unique nonce per authentication attempt
 2. Store nonces server-side with an expiration time
 3. Reject unknown, expired, or previously used nonces
 4. Invalidate nonces after successful verification
 
-**Recommendation**: Use >=16 bytes of randomness, Base58 or hexadecimal encoded.
+**Recommendation**: Use >=16 bytes of randomness, Base58 or hex encoded.
 
 ### issuedAt
 
-The `issuedAt` MUST be an ISO 8601 datetime string in UTC (indicated by `Z` suffix).
+ISO 8601 datetime in UTC (`Z` suffix).
 
 ### statement
 
-The `statement` is OPTIONAL. If present, it MUST NOT contain newline characters (`\n` or `\r`). It SHOULD describe the authentication purpose in human-readable terms.
+OPTIONAL. MUST NOT contain newline characters. SHOULD describe the authentication purpose.
 
 ### expirationTime
 
-The `expirationTime` is OPTIONAL. If present, relying parties MUST reject messages where the current time exceeds this value.
+OPTIONAL. Relying parties MUST reject messages past this time.
 
 **Recommendation**: 5-15 minutes from `issuedAt`.
 
 ### notBefore
 
-The `notBefore` is OPTIONAL. If present, relying parties MUST reject messages where the current time precedes this value.
+OPTIONAL. Relying parties MUST reject messages before this time.
 
 ### cluster
 
-The `cluster` is REQUIRED. Valid values are `mainnet-beta`, `devnet`, and `testnet`. Relying parties MUST validate the cluster value to prevent cross-cluster replay attacks.
+REQUIRED. One of `mainnet-beta`, `devnet`, `testnet`. Relying parties MUST validate to prevent cross-cluster replay.
 
 ### resources
 
-The `resources` field is OPTIONAL. Each resource MUST be a valid RFC 3986 URI. This field MAY be used to specify resources the user is authorizing access to.
+OPTIONAL. Each resource MUST be a valid RFC 3986 URI.
 
 ## Signature Verification
 
@@ -139,8 +137,6 @@ Solana uses Ed25519 for message signing. Verification MUST proceed as follows:
 2. Decode the signature from Base58 (64 bytes)
 3. Decode the public key from Base58 (32 bytes)
 4. Verify using Ed25519: `ed25519.verify(signature, message, publicKey)`
-
-The signature is valid if and only if the Ed25519 verification succeeds.
 
 ## Message Grammar
 
@@ -193,41 +189,19 @@ LF              = %x0A
 
 ### Replay Attacks
 
-**Threat**: Captured signatures reused for unauthorized authentication.
-
-**Mitigations**:
-- Single-use nonces MUST be enforced
-- Nonces MUST expire (RECOMMENDED: 5 minutes)
-- `expirationTime` provides defense in depth
+Captured signatures reused for unauthorized authentication. Single-use nonces MUST be enforced with expiration (RECOMMENDED: 5 minutes). `expirationTime` provides defense in depth.
 
 ### Cross-Site Request Forgery
 
-**Threat**: Signatures obtained from one site used on another.
-
-**Mitigations**:
-- `domain` MUST be verified server-side
-- `uri` binds authentication to a specific endpoint
-- Relying parties MUST reject domain/URI mismatches
+Signatures obtained from one site used on another. `domain` MUST be verified server-side and `uri` binds authentication to a specific endpoint. Relying parties MUST reject domain/URI mismatches.
 
 ### Phishing
 
-**Threat**: Users deceived into signing messages for malicious sites.
-
-**Mitigations**:
-- Wallets SHOULD display the complete message before signing
-- `domain` identifies the requesting party
-- `statement` explains the authentication purpose
-- Wallets SHOULD warn on unfamiliar domains
+Users deceived into signing messages for malicious sites. Wallets SHOULD display the complete message before signing and warn on unfamiliar domains. `domain` and `statement` help users identify the requesting party.
 
 ### Nonce Compromise
 
-**Threat**: Leaked or predicted nonces enable replay attacks.
-
-**Mitigations**:
-- Generate nonces using CSPRNG
-- Store nonces server-side only
-- Bind nonces to session or client identifiers
-- Implement proper expiration and cleanup
+Leaked or predicted nonces enable replay attacks. Generate nonces using CSPRNG, store server-side only, bind to session or client identifiers, and enforce expiration.
 
 ## Test Vectors
 
