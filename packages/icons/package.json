@@ -1,0 +1,30 @@
+{
+  "name": "@siws/icons",
+  "version": "0.0.0",
+  "private": true,
+  "sideEffects": false,
+  "exports": {
+    "./*": "./src/icons/*.tsx"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "fmt": "oxfmt --write .",
+    "fmt:check": "oxfmt --check .",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "^0.577.0"
+  },
+  "devDependencies": {
+    "@siws/typescript-config": "workspace:*",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  }
+}
