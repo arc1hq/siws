@@ -16,6 +16,7 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @siws/core build
       - run: pnpm --filter @siws/core --filter @siws/better-auth check-types
       - run: pnpm --filter @siws/core --filter @siws/better-auth lint
 
