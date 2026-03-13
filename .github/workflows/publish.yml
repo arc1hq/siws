@@ -1,0 +1,95 @@
+name: Publish Packages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - packages/core/**
+      - packages/better-auth/**
+
+jobs:
+  check-versions:
+    runs-on: ubuntu-latest
+    outputs:
+      core-changed: ${{ steps.check.outputs.core-changed }}
+      better-auth-changed: ${{ steps.check.outputs.better-auth-changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check for version changes
+        id: check
+        run: |
+          CORE_NEW=$(jq -r '.version' packages/core/package.json)
+          BETTER_AUTH_NEW=$(jq -r '.version' packages/better-auth/package.json)
+
+          CORE_OLD=$(git show HEAD~1:packages/core/package.json 2>/dev/null | jq -r '.version' 2>/dev/null || echo "")
+          BETTER_AUTH_OLD=$(git show HEAD~1:packages/better-auth/package.json 2>/dev/null | jq -r '.version' 2>/dev/null || echo "")
+
+          echo "core: $CORE_OLD -> $CORE_NEW"
+          echo "better-auth: $BETTER_AUTH_OLD -> $BETTER_AUTH_NEW"
+
+          if [ "$CORE_NEW" != "$CORE_OLD" ]; then
+            echo "core-changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "core-changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+          if [ "$BETTER_AUTH_NEW" != "$BETTER_AUTH_OLD" ]; then
+            echo "better-auth-changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "better-auth-changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish-core:
+    needs: check-versions
+    if: needs.check-versions.outputs.core-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @siws/core build
+      - run: pnpm --filter @siws/core publish --no-git-checks --access public --provenance
+
+  publish-better-auth:
+    needs: [check-versions, publish-core]
+    if: |
+      always() &&
+      needs.check-versions.outputs.better-auth-changed == 'true' &&
+      (needs.publish-core.result == 'success' || needs.publish-core.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @siws/core build
+      - run: pnpm --filter @siws/better-auth build
+      - run: pnpm --filter @siws/better-auth publish --no-git-checks --access public --provenance
