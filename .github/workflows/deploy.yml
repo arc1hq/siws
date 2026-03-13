@@ -3,6 +3,10 @@ name: Deploy
 on:
   push:
     branches: [main]
+    paths:
+      - apps/web/**
+      - packages/ui/**
+      - packages/icons/**
 
 jobs:
   check:
