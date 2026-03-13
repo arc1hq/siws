@@ -31,11 +31,9 @@ export const CopyButton = ({
     if (Array.isArray(node)) {
       return node.map(extractSourceCode).join("")
     }
-    if (React.isValidElement(node)) {
-      const { props } = node
-      // @ts-expect-error
+    if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
       const children = React.Children.map(
-        props.children,
+        node.props.children,
         extractSourceCode,
       )?.join("")
       return `${children}`
