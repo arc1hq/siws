@@ -6,7 +6,7 @@
     "dev:content": "velite --watch",
     "build:content": "velite --clean",
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "velite --clean && next build",
     "start": "next start",
     "check-types": "tsc --noEmit",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
