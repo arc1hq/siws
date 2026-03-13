@@ -83,20 +83,18 @@ export function Navbar() {
           size="icon"
           nativeButton={false}
           className="ml-2"
-          render={<a href={siteConfig.links.github} />}
+          render={<a href={siteConfig.links.npm} target="_blank" rel="noopener noreferrer" />}
         >
-          <GitHubIcon className="size-3.5" />
+          <NpmIcon className="size-3.5" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           nativeButton={false}
-          className="ml-2"
-          render={<a href={siteConfig.links.npm} />}
+          render={<a href={siteConfig.links.github} target="_blank" rel="noopener noreferrer" />}
         >
-          <NpmIcon className="size-3.5" />
+          <GitHubIcon className="size-3.5" />
         </Button>
-
         <ThemeToggler />
       </div>
     </nav>

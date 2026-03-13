@@ -70,7 +70,8 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
-      - run: pnpm --filter @siws/core publish --no-git-checks --access public --provenance
+      - run: npm publish --access public --provenance
+        working-directory: packages/core
 
   publish-better-auth:
     needs: [check, check-versions, publish-core]
@@ -95,4 +96,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
       - run: pnpm --filter @siws/better-auth build
-      - run: pnpm --filter @siws/better-auth publish --no-git-checks --access public --provenance
+      - run: npm publish --access public --provenance
+        working-directory: packages/better-auth
