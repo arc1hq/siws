@@ -1,5 +1,5 @@
 {
-  "extends": "@baseline/typescript-config/react-library.json",
+  "extends": "@siws/typescript-config/react-library.json",
   "include": ["src"],
   "exclude": ["node_modules"]
 }
