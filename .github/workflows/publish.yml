@@ -58,7 +58,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -71,7 +70,7 @@ jobs:
       - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
-      - run: npm publish --access public --provenance
+      - run: npm publish --access public
         working-directory: packages/core
 
   publish-better-auth:
@@ -84,7 +83,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -98,5 +96,5 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
       - run: pnpm --filter @siws/better-auth build
-      - run: npm publish --access public --provenance
+      - run: npm publish --access public
         working-directory: packages/better-auth
