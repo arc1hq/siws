@@ -7,10 +7,30 @@ import { usePathname } from 'next/navigation'
 import { MobileNav } from './mobile'
 import { ThemeToggler } from '@/components/theme/toggler'
 import { CommandMenu } from '@/components/command-menu'
+import { BookOpen, Package } from 'lucide-react'
+import { SectionSwitcher, type SectionItem } from './section-switcher'
+
+const sectionItems: SectionItem[] = [
+  {
+    label: 'Documentation',
+    description: 'Guides & specification',
+    href: '/docs/what-is-siws',
+    icon: BookOpen,
+    isActive: (p) => p.startsWith('/docs') && !p.startsWith('/docs/packages'),
+  },
+  {
+    label: 'Package',
+    description: 'SDK & integrations',
+    href: '/docs/packages/core',
+    icon: Package,
+    isActive: (p) => p.startsWith('/docs/packages'),
+  },
+]
 
 const navConfig = [
-  { label: 'Docs', href: '/docs' },
-  { label: 'Packages', href: '/docs/packages' },
+  { label: 'Home', href: '/' },
+  { label: 'Docs', href: '/docs/what-is-siws' },
+  { label: 'Packages', href: '/docs/packages/core' },
 ]
 
 export function Navbar() {
@@ -18,15 +38,16 @@ export function Navbar() {
 
   const isActive = (href: string) => {
     if (!pathname) return false
-    if (href === '/docs/packages') return pathname.startsWith('/docs/packages')
-    if (href === '/docs') return pathname.startsWith('/docs') && !pathname.startsWith('/docs/packages')
+    if (href === '/') return pathname === '/'
+    if (href.startsWith('/docs/packages')) return pathname.startsWith('/docs/packages')
+    if (href.startsWith('/docs')) return pathname.startsWith('/docs') && !pathname.startsWith('/docs/packages')
     return pathname.startsWith(href)
   }
 
   return (
     <nav className="flex items-center w-full h-(--header-height) border-b border-grid">
       <div className="hidden md:flex items-center shrink-0 w-(--sidebar-width) px-4 h-full border-r border-grid text-sm font-semibold">
-        SIWS
+        <SectionSwitcher items={sectionItems} />
       </div>
       <MobileNav />
       <div className="hidden md:flex items-center pl-3">
