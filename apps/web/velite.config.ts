@@ -30,6 +30,7 @@ const docs = defineCollection({
       date: s.isodate().optional(),
       published: s.boolean().default(true),
       body: s.mdx(),
+      raw: s.raw(),
       toc: s.toc(),
       showToc: s.boolean().default(true),
       tocMarkerVariant: s.enum(['auto', 'number', 'dot', 'none']).default('auto'),

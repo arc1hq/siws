@@ -1,4 +1,4 @@
-import { readRawMdx } from '@/lib/raw-markdown'
+import { docs } from '#site/content'
 import { NextResponse } from 'next/server'
 
 export async function GET(
@@ -7,13 +7,13 @@ export async function GET(
 ) {
   const { slug } = await params
   const slugAsParams = slug.join('/')
-  const content = await readRawMdx(slugAsParams)
+  const doc = docs.find((d) => d.slugAsParams === slugAsParams)
 
-  if (!content) {
+  if (!doc) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  return new NextResponse(content, {
+  return new NextResponse(doc.raw, {
     headers: {
       'Content-Type': 'text/markdown; charset=utf-8',
     },

@@ -6,7 +6,6 @@ import { PageHeader } from '@/components/page-header'
 import { PageNavigation } from '@/components/page-navigation'
 import { TocPromoCard } from '@/components/toc-promo-card'
 import { getAdjacentPages } from '@/lib/get-adjacent-pages'
-import { readRawMdx } from '@/lib/raw-markdown'
 import { notFound } from 'next/navigation'
 
 async function getDocFromParams(slugParts: string[]) {
@@ -35,7 +34,6 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
 
   const currentPath = `/docs/${doc.slugAsParams}`
   const { prev, next } = getAdjacentPages(currentPath)
-  const rawContent = await readRawMdx(doc.slugAsParams)
   const editPath = `apps/web/content/docs/${doc.slugAsParams}.mdx`
 
   return (
@@ -45,7 +43,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
           <PageHeader
             title={doc.title}
             excerpt={doc.excerpt}
-            rawContent={rawContent}
+            rawContent={doc.raw}
             prev={prev}
             next={next}
             markdownHref={`/docs/${doc.slugAsParams}.md`}

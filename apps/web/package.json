@@ -8,9 +8,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.17.1",
     "@siws/icons": "workspace:*",
     "@siws/ui": "workspace:*",
     "@tanstack/react-hotkeys": "^0.3.0",
@@ -35,6 +38,7 @@
     "typescript": "^5.9.3",
     "unist-builder": "4.0.0",
     "unist-util-visit": "^5.1.0",
-    "velite": "^0.3.1"
+    "velite": "^0.3.1",
+    "wrangler": "^4.72.0"
   }
 }

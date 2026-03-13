@@ -514,14 +514,14 @@ export function TableOfContents({
         <div
           aria-hidden="true"
           className={cn(
-            'pointer-events-none absolute inset-x-0 top-0 z-20 h-10 bg-gradient-to-b from-background via-background/80 to-transparent transition-opacity duration-200',
+            'pointer-events-none absolute inset-x-0 top-0 z-20 h-10 bg-linear-to-b from-doc-background via-doc-background/80 to-transparent transition-opacity duration-200',
             showTopFade ? 'opacity-100' : 'opacity-0'
           )}
         />
         <div
           aria-hidden="true"
           className={cn(
-            'pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-gradient-to-t from-background via-background/80 to-transparent transition-opacity duration-200',
+            'pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-linear-to-t from-doc-background via-doc-background/80 to-transparent transition-opacity duration-200',
             showBottomFade ? 'opacity-100' : 'opacity-0'
           )}
         />
