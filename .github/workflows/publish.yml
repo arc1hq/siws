@@ -73,8 +73,6 @@ jobs:
       - run: pnpm --filter @siws/core build
       - run: npm publish --access public --provenance
         working-directory: packages/core
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-better-auth:
     needs: [check, check-versions, publish-core]
@@ -102,5 +100,3 @@ jobs:
       - run: pnpm --filter @siws/better-auth build
       - run: npm publish --access public --provenance
         working-directory: packages/better-auth
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
