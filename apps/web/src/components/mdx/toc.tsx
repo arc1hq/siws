@@ -332,10 +332,13 @@ export function TableOfContents({
   const activeHeadings = useActiveItems(itemIds)
   const mounted = useMounted()
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
   const nodesRef = useRef<Map<string, HTMLElement>>(new Map())
   const metricsRef = useRef<TocNodeMetric[]>([])
   const [isNearPageBottom, setIsNearPageBottom] = useState(false)
+  const [showTopFade, setShowTopFade] = useState(false)
+  const [showBottomFade, setShowBottomFade] = useState(false)
   const [svgPath, setSvgPath] = useState('M 1 0 L 1 0')
 
   const y1 = useSpring(0, {
@@ -399,8 +402,9 @@ export function TableOfContents({
   }, [])
 
   useEffect(() => {
+    const scrollContainer = scrollContainerRef.current
     const metrics = metricsRef.current
-    if (metrics.length === 0 || activeHeadings.length === 0) return
+    if (!scrollContainer || metrics.length === 0 || activeHeadings.length === 0) return
 
     const activeSet = new Set(activeHeadings)
     const activeMetrics = metrics.filter((metric) => activeSet.has(metric.id))
@@ -410,25 +414,116 @@ export function TableOfContents({
     const activeLast = activeMetrics[activeMetrics.length - 1]
     const metricLast = metrics[metrics.length - 1]
     const last = isNearPageBottom ? (metricLast ?? activeLast) : activeLast
-    if (!first || !last) return
+    if (!first || !activeLast || !last) return
 
     const padding = config.activePadding[resolvedMarkerVariant]
     y1.set(first.center - padding)
     y2.set(last.center + padding)
+
+    const activeElement = nodesRef.current.get(activeLast.id)
+    if (!activeElement) return
+
+    const visibilityPadding = 24
+    const containerRect = scrollContainer.getBoundingClientRect()
+    const elementRect = activeElement.getBoundingClientRect()
+    const elementTop = elementRect.top - containerRect.top + scrollContainer.scrollTop
+    const elementBottom = elementRect.bottom - containerRect.top + scrollContainer.scrollTop
+    const viewportTop = scrollContainer.scrollTop + visibilityPadding
+    const viewportBottom = scrollContainer.scrollTop + scrollContainer.clientHeight - visibilityPadding
+
+    if (elementTop >= viewportTop && elementBottom <= viewportBottom) {
+      return
+    }
+
+    const nextScrollTop =
+      elementTop - scrollContainer.clientHeight / 2 + activeElement.clientHeight / 2
+    const maxScrollTop = scrollContainer.scrollHeight - scrollContainer.clientHeight
+    const clampedScrollTop = Math.max(0, Math.min(nextScrollTop, maxScrollTop))
+
+    scrollContainer.scrollTo({
+      top: clampedScrollTop,
+      behavior: 'smooth'
+    })
   }, [activeHeadings, config.activePadding, isNearPageBottom, resolvedMarkerVariant, y1, y2])
 
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current
+    const contentElement = contentRef.current
+    if (!scrollContainer || !contentElement) return
+
+    const updateFadeState = () => {
+      const { scrollTop, clientHeight, scrollHeight } = scrollContainer
+      const maxScrollTop = scrollHeight - clientHeight
+
+      if (maxScrollTop <= 1) {
+        setShowTopFade(false)
+        setShowBottomFade(false)
+        return
+      }
+
+      setShowTopFade(scrollTop > 4)
+      setShowBottomFade(scrollTop < maxScrollTop - 4)
+    }
+
+    updateFadeState()
+
+    const resizeObserver = new ResizeObserver(updateFadeState)
+    resizeObserver.observe(scrollContainer)
+    resizeObserver.observe(contentElement)
+    scrollContainer.addEventListener('scroll', updateFadeState, { passive: true })
+
+    return () => {
+      resizeObserver.disconnect()
+      scrollContainer.removeEventListener('scroll', updateFadeState)
+    }
+  }, [toc, layoutVersion])
+
   return (
-    <div className={cn('space-y-4', className)}>
+    <div
+      className={cn(
+        'space-y-4 [&_[data-toc-scroll-area]]:max-h-[min(70vh,32rem)]',
+        className
+      )}
+    >
       <TocHeader title={title} iconVariant={iconVariant} config={config} />
-      <div className="relative" ref={contentRef}>
-        {mounted ? <TocRail svgPath={svgPath} y1={y1} y2={y2} config={config} /> : null}
-        <TocTree
-          tree={toc}
-          activeItems={activeHeadings}
-          nodesRef={nodesRef}
-          markerVariant={resolvedMarkerVariant}
-          sizeConfig={config}
-          maxDepth={maxDepth}
+      <div className="relative overflow-hidden">
+        <div
+          ref={scrollContainerRef}
+          data-toc-scroll-area
+          className={cn(
+            'overflow-y-auto pr-3 [scrollbar-width:thin] [scrollbar-color:var(--border)_transparent]',
+            '[&::-webkit-scrollbar]:w-0.5',
+            '[&::-webkit-scrollbar-track]:bg-transparent',
+            '[&::-webkit-scrollbar-thumb]:rounded-full',
+            '[&::-webkit-scrollbar-thumb]:bg-border/55',
+            'hover:[&::-webkit-scrollbar-thumb]:bg-border/80'
+          )}
+        >
+          <div className="relative pl-0.5" ref={contentRef}>
+            {mounted ? <TocRail svgPath={svgPath} y1={y1} y2={y2} config={config} /> : null}
+            <TocTree
+              tree={toc}
+              activeItems={activeHeadings}
+              nodesRef={nodesRef}
+              markerVariant={resolvedMarkerVariant}
+              sizeConfig={config}
+              maxDepth={maxDepth}
+            />
+          </div>
+        </div>
+        <div
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute inset-x-0 top-0 z-20 h-10 bg-gradient-to-b from-background via-background/80 to-transparent transition-opacity duration-200',
+            showTopFade ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+        <div
+          aria-hidden="true"
+          className={cn(
+            'pointer-events-none absolute inset-x-0 bottom-0 z-20 h-10 bg-gradient-to-t from-background via-background/80 to-transparent transition-opacity duration-200',
+            showBottomFade ? 'opacity-100' : 'opacity-0'
+          )}
         />
       </div>
     </div>
