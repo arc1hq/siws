@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm"
-import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core"
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  uniqueIndex,
+} from "drizzle-orm/pg-core"
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -73,16 +80,28 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 )
 
-export const solanaAddress = pgTable("solana_address", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
-  address: text("address").notNull(),
-  cluster: text("cluster").notNull(),
-  isPrimary: boolean("is_primary").default(false),
-  createdAt: timestamp("created_at").notNull(),
-})
+export const solanaAddress = pgTable(
+  "solana_address",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    address: text("address").notNull(),
+    cluster: text("cluster").notNull(),
+    isPrimary: boolean("is_primary").default(false),
+    createdAt: timestamp("created_at").notNull(),
+  },
+  (table) => [
+    index("solanaAddress_userId_idx").on(table.userId),
+    index("solanaAddress_address_idx").on(table.address),
+    // Required by @siws/better-auth >= 0.2.0: one link per wallet and cluster.
+    uniqueIndex("solanaAddress_address_cluster_uidx").on(
+      table.address,
+      table.cluster,
+    ),
+  ],
+)
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

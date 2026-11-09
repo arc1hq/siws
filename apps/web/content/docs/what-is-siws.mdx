@@ -11,7 +11,8 @@ rank: 0
 - **Human-readable messages** -- Users see what they're signing before approval
 - **Ed25519 signatures** -- Native Solana signing, no transactions needed
 - **Replay protection** -- Server-generated nonces prevent reuse
-- **Domain binding** -- Messages bound to the requesting origin
+- **Domain binding** -- Messages bound to your app's configured domain
+- **Strict, canonical parsing** -- Only the exact message format is accepted, so the server verifies exactly what the wallet displayed
 - **Expiration support** -- Configurable message lifetime
 - **Cluster awareness** -- Prevents cross-cluster replay (`mainnet-beta`, `devnet`, `testnet`)
 
@@ -33,16 +34,19 @@ const message = new SiwsMessageBuilder()
 
 // 2. Send message.toMessage() to the client for signing
 
-// 3. Verify the signature
+// 3. Verify the signature. Always pass `domain` and the nonce you issued;
+//    omitting them disables domain binding and replay protection.
 const result = await verifySignature(
   messageString,
   signature,
   walletAddress,
-  { domain: 'example.com' }
+  { domain: 'example.com', nonce: storedNonce }
 )
 
 if (result.success) {
-  // Authenticated! result.data contains parsed message fields
+  // Authenticated! result.data contains the parsed message fields
+} else {
+  console.error(result.error.code, result.error.message)
 }
 ```
 

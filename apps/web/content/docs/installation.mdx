@@ -10,7 +10,7 @@ rank: 2
 
 <Installation package="@siws/core" className="mt-4" />
 
-**Requirements:** Node.js >= 18. No native dependencies -- uses `@noble/curves` and `bs58`.
+**Requirements:** Node.js >= 20. No native dependencies -- uses `@noble/curves` and `@scure/base`.
 
 ### Usage
 
@@ -29,8 +29,18 @@ const message = new SiwsMessageBuilder()
 
 const messageString = message.toMessage()
 
-// Verify a signature
-const result = await verifySignature(messageString, signature)
+// Verify the signature. Always pass `domain` and the nonce you issued:
+// without them there is no domain binding or replay protection.
+const result = await verifySignature(messageString, signature, undefined, {
+  domain: 'example.com',
+  nonce: storedNonce,
+})
+
+if (result.success) {
+  console.log('Signed in as', result.data.address)
+} else {
+  console.error(result.error.code, result.error.message)
+}
 ```
 
 ---
@@ -41,7 +51,7 @@ A [better-auth](https://www.better-auth.com/) plugin with automatic nonce manage
 
 <Installation package="@siws/better-auth" className="mt-4" />
 
-**Peer dependency:** `better-auth` >= 1.0.0
+**Peer dependencies:** `better-auth` and `@better-auth/core` `>=1.7.7 <2`. After adding the plugin, run your better-auth migrations to create the `solanaAddress` table.
 
 ### Setup
 
@@ -52,6 +62,9 @@ import { betterAuth } from 'better-auth'
 import { siws } from '@siws/better-auth'
 
 export const auth = betterAuth({
+  // The SIWS domain and URI come from baseURL (or BETTER_AUTH_URL, or the
+  // plugin's `domain`/`uri` options), never from request headers.
+  baseURL: 'https://example.com',
   plugins: [
     siws({
       statement: 'Sign in to MyApp',
@@ -71,16 +84,25 @@ export const auth = createAuthClient({
 })
 
 // Get nonce and message
-const { nonce, message } = await auth.siws.getNonce({
+const { data: nonceData, error: nonceError } = await auth.siws.getNonce({
+  address: walletAddress,
+  cluster: 'mainnet-beta',
+})
+if (nonceError || !nonceData) throw new Error(nonceError?.message)
+
+// Sign the exact message string (don't modify it) and verify
+const { message } = nonceData
+const signature = await wallet.signMessage(new TextEncoder().encode(message))
+const { data, error } = await auth.siws.verify({
+  message,
+  signature: bs58.encode(signature),
   address: walletAddress,
   cluster: 'mainnet-beta',
 })
 
-// Sign with wallet and verify
-const signature = await wallet.signMessage(new TextEncoder().encode(message))
-const result = await auth.siws.verify({
-  message,
-  signature: bs58.encode(signature),
-  address: walletAddress,
-})
+if (error) {
+  console.error(error.code, error.message) // e.g. INVALID_OR_EXPIRED_NONCE
+} else {
+  console.log('Signed in as', data?.user.address)
+}
 ```
