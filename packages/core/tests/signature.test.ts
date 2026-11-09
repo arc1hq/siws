@@ -2,7 +2,8 @@ import { describe, it, expect } from "vitest"
 import { ed25519 } from "@noble/curves/ed25519"
 import { verifySignature } from "@/signature"
 import { SiwsMessage } from "@/message"
-import { SiwsErrorCode } from "@/errors"
+import { SiwsError, SiwsErrorCode } from "@/errors"
+import type { SiwsMessageFields } from "@/types"
 import { encodeBase58, stringToBytes } from "@/utils"
 
 function createTestKeypair() {
@@ -163,7 +164,43 @@ Cluster: mainnet-beta`
       )
 
       expect(result.success).toBe(false)
-      expect(result.error!.code).toBe(
+      expect(result.error!.code).toBe(SiwsErrorCode.INVALID_ADDRESS)
+      expect(result.error!.expected).toBe(address)
+      expect(result.error!.received).toBe(wrongAddress)
+    })
+
+    it("rejects message claiming a victim address signed with attacker key", async () => {
+      const attacker = createTestKeypair()
+      const victim = createTestKeypair()
+
+      const messageString = `example.com wants you to sign in with your Solana account:
+${victim.address}
+
+URI: https://example.com/auth
+Version: 1
+Nonce: abcd1234
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
+
+      const signature = signMessage(messageString, attacker.privateKey)
+
+      // Attacker supplies their own key as publicKey
+      const withKey = await verifySignature(
+        messageString,
+        signature,
+        attacker.address,
+        { domain: "example.com", nonce: "abcd1234" },
+      )
+      expect(withKey.success).toBe(false)
+      expect(withKey.data).toBeUndefined()
+      expect(withKey.error!.code).toBe(SiwsErrorCode.INVALID_ADDRESS)
+      expect(withKey.error!.expected).toBe(victim.address)
+      expect(withKey.error!.received).toBe(attacker.address)
+
+      // Without publicKey the message address is used, so the signature fails
+      const withoutKey = await verifySignature(messageString, signature)
+      expect(withoutKey.success).toBe(false)
+      expect(withoutKey.error!.code).toBe(
         SiwsErrorCode.SIGNATURE_VERIFICATION_FAILED,
       )
     })
@@ -230,7 +267,7 @@ Cluster: mainnet-beta`
       expect(result.error!.code).toBe(SiwsErrorCode.INVALID_ADDRESS)
     })
 
-    it("rejects public key with wrong length", async () => {
+    it("rejects public key that does not match the address (wrong length)", async () => {
       const { privateKey, address } = createTestKeypair()
 
       const messageString = `example.com wants you to sign in with your Solana account:
@@ -248,7 +285,49 @@ Cluster: mainnet-beta`
 
       expect(result.success).toBe(false)
       expect(result.error!.code).toBe(SiwsErrorCode.INVALID_ADDRESS)
-      expect(result.error!.message).toContain("Invalid public key length")
+      expect(result.error!.message).toContain("does not match message address")
+    })
+
+    it("rejects validly signed non-canonical message (duplicate nonce)", async () => {
+      const { privateKey, address } = createTestKeypair()
+
+      const messageString = `example.com wants you to sign in with your Solana account:
+${address}
+
+URI: https://example.com/auth
+Version: 1
+Nonce: abcd1234
+Nonce: efgh5678
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
+
+      const signature = signMessage(messageString, privateKey)
+      const result = await verifySignature(messageString, signature, address, {
+        nonce: "efgh5678",
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error!.code).toBe(SiwsErrorCode.PARSE_ERROR)
+    })
+
+    it("rejects validly signed message with trailing newline", async () => {
+      const { privateKey, address } = createTestKeypair()
+
+      const messageString = `example.com wants you to sign in with your Solana account:
+${address}
+
+URI: https://example.com/auth
+Version: 1
+Nonce: abcd1234
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta
+`
+
+      const signature = signMessage(messageString, privateKey)
+      const result = await verifySignature(messageString, signature)
+
+      expect(result.success).toBe(false)
+      expect(result.error!.code).toBe(SiwsErrorCode.PARSE_ERROR)
     })
   })
 
@@ -362,6 +441,29 @@ Cluster: mainnet-beta`
       expect(result.error!.code).toBe(SiwsErrorCode.MESSAGE_EXPIRED)
     })
 
+    it("rejects message exactly at expirationTime", async () => {
+      const { privateKey, address } = createTestKeypair()
+
+      const message = new SiwsMessage({
+        domain: "example.com",
+        address,
+        uri: "https://example.com/auth",
+        version: "1",
+        nonce: "abcd1234",
+        issuedAt: "2024-01-15T12:00:00Z",
+        cluster: "mainnet-beta",
+        expirationTime: "2024-01-15T12:10:00Z",
+      })
+
+      const signature = signMessage(message.toMessage(), privateKey)
+      const result = await verifySignature(message, signature, undefined, {
+        time: new Date("2024-01-15T12:10:00Z"),
+      })
+
+      expect(result.success).toBe(false)
+      expect(result.error!.code).toBe(SiwsErrorCode.MESSAGE_EXPIRED)
+    })
+
     it("accepts non-expired message with custom time", async () => {
       const { privateKey, address } = createTestKeypair()
 
@@ -425,6 +527,44 @@ Cluster: mainnet-beta`
       })
 
       expect(result.success).toBe(true)
+    })
+  })
+
+  describe("result type", () => {
+    it("narrows data and error on success", async () => {
+      const { privateKey, address } = createTestKeypair()
+      const message = new SiwsMessage({
+        domain: "example.com",
+        address,
+        uri: "https://example.com/auth",
+        version: "1",
+        nonce: "abcd1234",
+        issuedAt: "2024-01-15T12:00:00Z",
+        cluster: "mainnet-beta",
+      })
+      const signature = signMessage(message.toMessage(), privateKey)
+      const result = await verifySignature(message, signature)
+
+      if (result.success) {
+        // compiles without non-null assertions
+        const fields: SiwsMessageFields = result.data
+        expect(fields.address).toBe(address)
+        expect(result.error).toBeUndefined()
+      } else {
+        throw new Error(`unexpected failure: ${result.error.code}`)
+      }
+    })
+
+    it("narrows error on failure", async () => {
+      const result = await verifySignature("invalid message", "signature")
+
+      if (!result.success) {
+        const error: SiwsError = result.error
+        expect(error.code).toBe(SiwsErrorCode.PARSE_ERROR)
+        expect(result.data).toBeUndefined()
+      } else {
+        throw new Error("expected failure")
+      }
     })
   })
 

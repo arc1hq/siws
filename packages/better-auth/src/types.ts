@@ -6,6 +6,26 @@ export type { Cluster } from "@siws/core"
 
 export interface SiwsOptions {
   /**
+   * The RFC 3986 authority (host with optional port) that requests the
+   * signature, e.g. `example.com` or `localhost:3000`. It is written into
+   * every SIWS message and must match on verification.
+   *
+   * Never derived from request headers. Defaults to the host of the
+   * better-auth base URL configured at startup (the static `baseURL` option
+   * or the `BETTER_AUTH_URL` environment variable). A dynamic `baseURL`
+   * config counts as not configured.
+   */
+  domain?: string
+
+  /**
+   * The RFC 3986 URI written into the SIWS message, e.g.
+   * `https://example.com`.
+   *
+   * Defaults to the origin of the better-auth `baseURL`.
+   */
+  uri?: string
+
+  /**
    * Optional statement to include in the SIWS message.
    * Displayed to users when signing.
    */
@@ -91,9 +111,9 @@ export interface VerifyInput {
  * Response from the verify endpoint.
  */
 export interface VerifyResponse {
-  success: boolean
-  token?: string
-  user?: {
+  success: true
+  token: string
+  user: {
     id: string
     address: string
     cluster: Cluster

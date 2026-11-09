@@ -13,6 +13,7 @@ import { betterAuth } from 'better-auth'
 import { siws } from '@siws/better-auth'
 
 export const auth = betterAuth({
+  baseURL: 'https://example.com', // or set BETTER_AUTH_URL
   // ... your database and other config
   plugins: [
     siws({
@@ -24,10 +25,16 @@ export const auth = betterAuth({
 })
 ```
 
+Requires better-auth `>=1.7.7 <2`.
+
+The message `domain` and `uri` come from the `domain` / `uri` options, or from the base URL configured for better-auth: the static `baseURL` option or the `BETTER_AUTH_URL` environment variable (`example.com` and `https://example.com` above). They are never read from the `Origin` or `Host` request headers. If none of these is set, both endpoints fail with `DOMAIN_NOT_CONFIGURED`, even though better-auth itself would fall back to the request's Host. A dynamic `baseURL` (`{ allowedHosts }`) counts as not configured; set `domain` and `uri` instead.
+
 ### Options
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
+| `domain` | `string?` | `baseURL` host | RFC 3986 authority bound into the message, e.g. `example.com` or `localhost:3000` |
+| `uri` | `string?` | `baseURL` origin | URI written into the message |
 | `statement` | `string?` | -- | Statement shown when signing |
 | `expirationTime` | `number?` | `300` | Expiration in seconds |
 | `cluster` | `Cluster?` | `'mainnet-beta'` | Default Solana cluster |
@@ -51,10 +58,10 @@ export const auth = createAuthClient({
 
 #### `auth.siws.getNonce(input)`
 
-Request a nonce and pre-built message for signing.
+Request a nonce and pre-built message for signing. Like all better-auth client calls, it returns `{ data, error }`.
 
 ```ts
-const { nonce, message } = await auth.siws.getNonce({
+const { data, error } = await auth.siws.getNonce({
   address: '7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU',
   cluster: 'mainnet-beta', // optional, uses server default
 })
@@ -76,10 +83,10 @@ const { nonce, message } = await auth.siws.getNonce({
 
 #### `auth.siws.verify(input)`
 
-Verify a signature and create a session.
+Verify a signature and create a session. `address` and `cluster` must match the ones used to request the nonce.
 
 ```ts
-const result = await auth.siws.verify({
+const { data, error } = await auth.siws.verify({
   message,
   signature: bs58.encode(signatureBytes),
   address: walletAddress,
@@ -87,9 +94,11 @@ const result = await auth.siws.verify({
   email: 'user@example.com', // optional
 })
 
-if (result.success) {
+if (data) {
   // User is authenticated, session cookie is set
-  console.log(result.user)
+  console.log(data.user)
+} else {
+  console.error(error.code) // e.g. 'INVALID_OR_EXPIRED_NONCE'
 }
 ```
 
@@ -107,9 +116,41 @@ if (result.success) {
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `success` | `boolean` | Whether verification succeeded |
-| `token` | `string?` | Session token |
-| `user` | `object?` | `{ id, address, cluster }` |
+| `success` | `true` | Always `true`; failures are returned as `error` |
+| `token` | `string` | Session token |
+| `user` | `object` | `{ id, address, cluster }` |
+
+## Verification
+
+`/siws/verify` checks, in order:
+
+1. The message parses as a SIWS message.
+2. The message `address` and `cluster` equal the request `address` and `cluster`.
+3. A nonce was issued for that address, cluster and nonce and has not expired. It is consumed atomically, so each nonce is single use even under concurrent requests, and a failed attempt also uses it up. The client must request a new nonce.
+4. The message `domain` equals the configured domain.
+5. The Ed25519 signature is valid for the message address.
+
+## Error Codes
+
+Errors are returned with a `code` from `SiwsPluginErrorCode`:
+
+| Code | Status | When |
+|------|--------|------|
+| `INVALID_ADDRESS` | 400 | `address` is not a valid Solana address |
+| `INVALID_CLUSTER` | 400 | `cluster` is not `mainnet-beta`, `devnet` or `testnet` |
+| `INVALID_MESSAGE` | 400 | The message is not a valid SIWS message |
+| `EMAIL_REQUIRED` | 400 | `anonymous: false` and no `email` was sent |
+| `ADDRESS_MISMATCH` | 401 | Message address differs from the request `address` |
+| `CLUSTER_MISMATCH` | 401 | Message cluster differs from the request `cluster` |
+| `INVALID_OR_EXPIRED_NONCE` | 401 | Nonce never issued, already used, or expired |
+| `DOMAIN_MISMATCH` | 401 | Message domain differs from the configured domain |
+| `VERIFICATION_FAILED` | 401 | Invalid signature or failed message verification |
+| `EMAIL_ALREADY_IN_USE` | 422 | `anonymous: false` and a user with that email exists |
+| `DOMAIN_NOT_CONFIGURED` | 500 | No `domain`/`uri` option and no static `baseURL` / `BETTER_AUTH_URL` |
+
+Unexpected server errors return a generic `500`. The details go to the better-auth logger, not to the client.
+
+The codes and messages are also exported as `SIWS_ERROR_CODES` and registered as the plugin's `$ERROR_CODES`.
 
 ## Endpoints
 
@@ -135,6 +176,10 @@ The plugin creates a `solanaAddress` table to store linked wallet addresses:
 
 Run your better-auth database migrations to create this table.
 
+The pair (`address`, `cluster`) has a unique index. Sign-in creates the user, the address link and the account in one transaction. If two first sign-ins for the same wallet (or the same email when `anonymous: false`) run at the same time, the database's unique constraints reject the second one, which rolls back, retries once and signs into the user the first one created. Use an adapter with transaction support (Postgres, MySQL, SQLite) to get this guarantee; the memory adapter enforces neither constraint.
+
+> **Upgrading from 0.1.x:** 0.2.0 adds the unique index, so run your better-auth migrations (`npx @better-auth/cli migrate` or `generate`). If existing data has duplicate (`address`, `cluster`) rows, remove them first or the migration will fail.
+
 ## Full Example
 
 ```ts title="auth.ts"
@@ -142,6 +187,7 @@ import { betterAuth } from 'better-auth'
 import { siws } from '@siws/better-auth'
 
 export const auth = betterAuth({
+  baseURL: 'https://example.com',
   database: {
     // your database config
   },
@@ -172,25 +218,26 @@ async function signInWithSolana(wallet: { publicKey: PublicKey; signMessage: (ms
   const address = wallet.publicKey.toBase58()
 
   // 1. Get nonce and message from server
-  const { message } = await auth.siws.getNonce({
+  const { data: nonceData, error: nonceError } = await auth.siws.getNonce({
+    address,
+    cluster: 'mainnet-beta',
+  })
+  if (nonceError) throw new Error(nonceError.message)
+
+  // 2. Sign with wallet
+  const signatureBytes = await wallet.signMessage(
+    new TextEncoder().encode(nonceData.message)
+  )
+
+  // 3. Verify and create session
+  const { data, error } = await auth.siws.verify({
+    message: nonceData.message,
+    signature: bs58.encode(signatureBytes),
     address,
     cluster: 'mainnet-beta',
   })
 
-  // 2. Sign with wallet
-  const signatureBytes = await wallet.signMessage(
-    new TextEncoder().encode(message)
-  )
-
-  // 3. Verify and create session
-  const result = await auth.siws.verify({
-    message,
-    signature: bs58.encode(signatureBytes),
-    address,
-  })
-
-  if (result.success) {
-    console.log('Signed in as:', result.user)
-  }
+  if (error) throw new Error(error.message)
+  console.log('Signed in as:', data.user)
 }
 ```

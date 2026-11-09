@@ -1,7 +1,11 @@
-import { describe, it, expect } from "vitest"
-import { siws, SiwsPluginErrorCode, schema } from "@/index"
+import { describe, it, expect, expectTypeOf } from "vitest"
+import type { BetterAuthPlugin } from "better-auth"
+import type { BetterAuthClientPlugin } from "better-auth/client"
+import { createAuthClient } from "better-auth/client"
+import { siws, SiwsPluginErrorCode, SIWS_ERROR_CODES, schema } from "@/index"
 import { siwsClient } from "@/client"
 import type {
+  Cluster,
   SiwsOptions,
   SolanaAddress,
   NonceInput,
@@ -30,6 +34,8 @@ describe("siws plugin", () => {
         resources: ["https://example.com/api"],
         emailDomainName: "myapp.local",
         anonymous: false,
+        domain: "example.com",
+        uri: "https://example.com",
       }
 
       const plugin = siws(options)
@@ -56,15 +62,34 @@ describe("siws plugin", () => {
   })
 
   describe("error codes", () => {
-    it("exports all error codes", () => {
-      expect(SiwsPluginErrorCode.INVALID_ADDRESS).toBe("INVALID_ADDRESS")
-      expect(SiwsPluginErrorCode.INVALID_CLUSTER).toBe("INVALID_CLUSTER")
-      expect(SiwsPluginErrorCode.NONCE_NOT_FOUND).toBe("NONCE_NOT_FOUND")
-      expect(SiwsPluginErrorCode.NONCE_MISMATCH).toBe("NONCE_MISMATCH")
-      expect(SiwsPluginErrorCode.VERIFICATION_FAILED).toBe(
-        "VERIFICATION_FAILED",
+    it("exports every error code with its own name as value", () => {
+      expect(Object.keys(SiwsPluginErrorCode).sort()).toEqual(
+        [
+          "ADDRESS_MISMATCH",
+          "CLUSTER_MISMATCH",
+          "DOMAIN_MISMATCH",
+          "DOMAIN_NOT_CONFIGURED",
+          "EMAIL_ALREADY_IN_USE",
+          "EMAIL_REQUIRED",
+          "INVALID_ADDRESS",
+          "INVALID_CLUSTER",
+          "INVALID_MESSAGE",
+          "INVALID_OR_EXPIRED_NONCE",
+          "VERIFICATION_FAILED",
+        ].sort(),
       )
-      expect(SiwsPluginErrorCode.EMAIL_REQUIRED).toBe("EMAIL_REQUIRED")
+      for (const [key, value] of Object.entries(SiwsPluginErrorCode)) {
+        expect(value).toBe(key)
+      }
+    })
+
+    it("registers error codes on the plugin in better-auth's shape", () => {
+      const { $ERROR_CODES } = siws()
+      expect($ERROR_CODES).toBe(SIWS_ERROR_CODES)
+      for (const code of Object.values(SiwsPluginErrorCode)) {
+        expect($ERROR_CODES[code].code).toBe(code)
+        expect($ERROR_CODES[code].message).toEqual(expect.any(String))
+      }
     })
   })
 })
@@ -167,5 +192,35 @@ describe("types", () => {
     expect(input.address).toBe(VALID_ADDRESS)
     expect(input.cluster).toBe("mainnet-beta")
     expect(input.email).toBe("user@example.com")
+  })
+})
+
+describe("type inference", () => {
+  it("siws() is a BetterAuthPlugin and siwsClient() a client plugin", () => {
+    expectTypeOf(siws()).toExtend<BetterAuthPlugin>()
+    expectTypeOf(siwsClient()).toExtend<BetterAuthClientPlugin>()
+  })
+
+  it("client actions return the plugin's response types", () => {
+    const client = createAuthClient({
+      baseURL: "https://example.com",
+      plugins: [siwsClient()],
+    })
+    expect(typeof client.siws.verify).toBe("function")
+    type VerifyResult = Awaited<ReturnType<typeof client.siws.verify>>
+    type NonceResult = Awaited<ReturnType<typeof client.siws.getNonce>>
+
+    expectTypeOf<NonNullable<VerifyResult["data"]>["user"]>().toEqualTypeOf<{
+      id: string
+      address: string
+      cluster: Cluster
+    }>()
+    expectTypeOf<NonNullable<VerifyResult["error"]>["code"]>().toEqualTypeOf<
+      string | undefined
+    >()
+    expectTypeOf<NonNullable<NonceResult["data"]>>().toEqualTypeOf<{
+      nonce: string
+      message: string
+    }>()
   })
 })

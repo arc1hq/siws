@@ -7,7 +7,8 @@ A standard message format and verification process for authenticating Solana wal
 - **Human-readable messages** -- Users see what they're signing before approval
 - **Ed25519 signatures** -- Native Solana signing, no transactions needed
 - **Replay protection** -- Server-generated nonces prevent reuse
-- **Domain binding** -- Messages bound to the requesting origin
+- **Domain binding** -- Messages bound to your app's configured domain
+- **Strict, canonical parsing** -- Only the exact message format is accepted; duplicate or unknown lines are rejected
 - **Expiration support** -- Configurable message lifetime
 - **Cluster awareness** -- Prevents cross-cluster replay (`mainnet-beta`, `devnet`, `testnet`)
 
@@ -29,13 +30,17 @@ const message = new SiwsMessageBuilder()
 
 // 2. Send message.toMessage() to the client for signing
 
-// 3. Verify the signature
+// 3. Verify the signature. Always pass `domain` and the server-issued `nonce`;
+//    omitting them disables domain binding and replay protection.
 const result = await verifySignature(messageString, signature, walletAddress, {
   domain: "example.com",
+  nonce: storedNonce,
 })
 
 if (result.success) {
-  // Authenticated! result.data contains parsed message fields
+  // Authenticated! result.data contains the parsed message fields
+} else {
+  console.error(result.error.code, result.error.message)
 }
 ```
 
@@ -54,7 +59,7 @@ npm install @siws/core
 
 Core library implementing the SIWS specification -- message construction, parsing, validation, and signature verification.
 
-**Requirements:** Node.js >= 18. No native dependencies -- uses `@noble/curves` and `bs58`.
+**Requirements:** Node.js >= 20. No native dependencies.
 
 ### @siws/better-auth
 
@@ -71,6 +76,9 @@ import { betterAuth } from "better-auth"
 import { siws } from "@siws/better-auth"
 
 export const auth = betterAuth({
+  // The SIWS domain and URI are taken from baseURL (or the plugin's `domain`/`uri`
+  // options) and are never read from request headers.
+  baseURL: "https://example.com",
   plugins: [
     siws({
       statement: "Sign in to MyApp",
@@ -92,14 +100,15 @@ export const auth = createAuthClient({
 })
 
 // Get nonce and message
-const { nonce, message } = await auth.siws.getNonce({
+const { data: nonceData } = await auth.siws.getNonce({
   address: walletAddress,
   cluster: "mainnet-beta",
 })
 
-// Sign with wallet and verify
+// Sign the exact message string (don't modify it) and verify
+const { message } = nonceData!
 const signature = await wallet.signMessage(new TextEncoder().encode(message))
-const result = await auth.siws.verify({
+const { data, error } = await auth.siws.verify({
   message,
   signature: bs58.encode(signature),
   address: walletAddress,

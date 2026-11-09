@@ -1,13 +1,17 @@
 import type { Cluster } from "@/types"
 
+/** SIWS message format version emitted and accepted by this library. */
 export const SIWS_VERSION = "1"
 
-export const SOLANA_ADDRESS_LENGTH = { min: 43, max: 44 }
+// Base58 length of a 32-byte public key: 44 max; shorter (down to 32) when the
+// key has leading zero bytes or a small leading value.
+export const SOLANA_ADDRESS_LENGTH = { min: 32, max: 44 }
 export const SIGNATURE_BYTE_LENGTH = 64
 export const PUBLIC_KEY_BYTE_LENGTH = 32
 export const NONCE_MIN_LENGTH = 8
 export const DEFAULT_NONCE_LENGTH = 16
 
+/** All supported `Cluster` values. */
 export const CLUSTERS: readonly Cluster[] = [
   "mainnet-beta",
   "devnet",

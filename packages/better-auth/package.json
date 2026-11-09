@@ -1,9 +1,9 @@
 {
   "name": "@siws/better-auth",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "license": "MIT",
   "description": "Sign In With Solana plugin for better-auth",
-  "author": "osiws contributors",
+  "author": "siws contributors",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arc1hq/siws.git",
@@ -61,22 +61,26 @@
     "test:watch": "vitest"
   },
   "peerDependencies": {
-    "better-auth": ">=1.0.0"
+    "@better-auth/core": ">=1.7.7 <2",
+    "better-auth": ">=1.7.7 <2"
   },
   "dependencies": {
-    "@siws/core": "workspace:*",
+    "@siws/core": "workspace:^",
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@noble/curves": "^1.8.1",
     "@siws/eslint-config": "workspace:*",
     "@siws/typescript-config": "workspace:*",
-    "better-auth": "^1.2.8",
+    "better-auth": "^1.7.18",
+    "bs58": "^6.0.0",
     "tsup": "^8.0.0",
     "typescript": "^5.9.2",
-    "vitest": "^2.0.0"
+    "vitest": "^2.0.0",
+    "@better-auth/core": "^1.7.18"
   },
   "sideEffects": false,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }

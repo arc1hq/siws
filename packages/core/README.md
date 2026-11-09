@@ -45,16 +45,16 @@ const message = new SiwsMessageBuilder()
 // 3. Get the message string for wallet to sign
 const messageString = message.toMessage()
 
-// 4. Verify signature (server-side)
-const result = await verifySignature(messageString, signature, {
+// 4. Verify signature (server-side). Always pass domain and nonce.
+const result = await verifySignature(messageString, signature, undefined, {
   domain: "example.com",
   nonce: nonce,
 })
 
 if (result.success) {
-  console.log("Authenticated!", result.data.address)
+  console.log("Authenticated!", result.data.address) // data is typed here
 } else {
-  console.error("Failed:", result.error?.code)
+  console.error("Failed:", result.error.code) // error is typed here
 }
 ```
 
@@ -86,7 +86,7 @@ const message = new SiwsMessageBuilder()
 Represents a parsed or built SIWS message.
 
 ```typescript
-// Parse from string
+// Parse from string (strict: input must be in canonical form, see below)
 const message = SiwsMessage.parse(messageString)
 
 // Access fields
@@ -115,24 +115,32 @@ Verifies an Ed25519 signature against a SIWS message.
 async function verifySignature(
   message: string | SiwsMessage,
   signature: string, // Base58-encoded signature
-  publicKey?: string, // Optional: defaults to message.address
+  publicKey?: string, // Optional: must equal message.address if given
   options?: VerificationOptions,
 ): Promise<VerificationResult>
 
 // Options
 interface VerificationOptions {
-  domain?: string // Validate domain matches
-  nonce?: string // Validate nonce matches
+  domain?: string // Validate domain matches (omit = no domain binding!)
+  nonce?: string // Validate nonce matches (omit = no replay protection!)
   time?: Date // Custom time for expiration check
 }
 
-// Result
-interface VerificationResult {
-  success: boolean
-  data?: SiwsMessageFields // Parsed message fields on success
-  error?: SiwsError // Error details on failure
-}
+// Result: discriminated union, `if (result.success)` narrows both branches
+type VerificationResult =
+  | { success: true; data: SiwsMessageFields; error?: undefined }
+  | { success: false; error: SiwsError; data?: undefined }
 ```
+
+- The signature is always checked against the `address` in the message. If
+  you pass `publicKey` (for example the address the client claims) and it
+  differs from the message address, verification fails with
+  `INVALID_ADDRESS`.
+- `domain` and `nonce` are optional, but omitting `domain` disables domain
+  binding and omitting `nonce` disables replay protection. Pass both in
+  production.
+- `verifySignature` never throws; failures come back as
+  `{ success: false, error }`.
 
 ### `generateNonce()`
 
@@ -232,6 +240,22 @@ Resources:
 - https://example.com/profile
 ```
 
+### Strict parsing
+
+`SiwsMessage.parse()` and `verifySignature()` only accept messages in
+canonical form: the input must be byte-for-byte equal to `toMessage()` of the
+parsed result. The parser rejects the following with `PARSE_ERROR`:
+
+- CRLF line endings or a trailing newline
+- fields out of order, duplicate fields (e.g. two `Nonce:` lines), unknown
+  fields, or junk lines
+- extra or missing blank lines, and a statement that looks like a field line
+- an empty `Resources:` section
+
+Because of this, one signed string always maps to exactly one set of fields.
+Always verify the exact string the wallet signed, and do not re-wrap or
+reformat it.
+
 ## Security Considerations
 
 1. **Always validate the domain** - Pass the expected domain in verification options
@@ -239,10 +263,13 @@ Resources:
 3. **Use expiration times** - Set reasonable expiration windows (e.g., 10 minutes)
 4. **Generate fresh nonces** - Never reuse nonces across sign-in attempts
 5. **Verify on the server** - Never trust client-side verification alone
+6. **Bind the account** - Use `result.data.address` as the authenticated
+   account, or pass the client's claimed address as `publicKey` (it must match
+   the message address)
 
 ```typescript
 // Recommended verification pattern
-const result = await verifySignature(message, signature, {
+const result = await verifySignature(message, signature, claimedAddress, {
   domain: "example.com", // Your domain
   nonce: storedNonce, // Server-stored nonce
 })
@@ -250,7 +277,7 @@ const result = await verifySignature(message, signature, {
 
 ## Requirements
 
-- Node.js >= 18
+- Node.js >= 20 (uses the global Web Crypto `crypto.getRandomValues`)
 
 ## License
 

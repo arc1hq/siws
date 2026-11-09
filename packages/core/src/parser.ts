@@ -1,86 +1,107 @@
 import type { SiwsMessageFields, Cluster } from "@/types"
 import { SiwsError, SiwsErrorCode } from "@/errors"
 import { CLUSTERS } from "@/constants"
+import { DOMAIN_LINE_SUFFIX, serializeMessage } from "@/serializer"
 
-const DOMAIN_LINE_SUFFIX = " wants you to sign in with your Solana account:"
+const FIELD_KEYS = [
+  "URI",
+  "Version",
+  "Nonce",
+  "Issued At",
+  "Expiration Time",
+  "Not Before",
+  "Request ID",
+  "Cluster",
+] as const
 
+type FieldKey = (typeof FIELD_KEYS)[number]
+
+const RESOURCES_HEADER = "Resources:"
+
+function parseError(message: string): SiwsError {
+  return new SiwsError(SiwsErrorCode.PARSE_ERROR, message)
+}
+
+/**
+ * True if `line` starts like a field line (`URI: `, `Nonce: `, ...,
+ * `Resources:`). Statements may not look like this.
+ */
+export function isFieldLine(line: string): boolean {
+  return (
+    line === RESOURCES_HEADER ||
+    FIELD_KEYS.some((key) => line.startsWith(`${key}: `))
+  )
+}
+
+/**
+ * Parse a raw SIWS message string into its fields.
+ *
+ * Parsing is strict: the input must be in canonical form, i.e. byte-for-byte
+ * identical to what `serializeMessage` produces for the parsed fields (LF line
+ * endings, fixed field order, no duplicate or unknown lines, no trailing
+ * newline). Anything else throws `PARSE_ERROR`, so the string a wallet signed
+ * always maps to exactly one set of fields.
+ *
+ * Field *values* are not validated here; `SiwsMessage` does that.
+ */
 export function parseMessage(message: string): SiwsMessageFields {
+  if (message.includes("\r")) {
+    throw parseError(
+      "Invalid message format: carriage return found (lines must be separated by LF only)",
+    )
+  }
+
   const lines = message.split("\n")
 
   if (lines.length < 6) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Message is too short to be valid",
-    )
+    throw parseError("Message is too short to be valid")
   }
 
   const domainLine = lines[0]
   if (!domainLine || !domainLine.endsWith(DOMAIN_LINE_SUFFIX)) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Invalid message format: missing domain line",
-    )
+    throw parseError("Invalid message format: missing domain line")
   }
 
   const domain = domainLine.slice(0, -DOMAIN_LINE_SUFFIX.length)
   const address = lines[1]
 
   if (!address) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Invalid message format: missing address",
+    throw parseError("Invalid message format: missing address")
+  }
+
+  if (lines[2] !== "") {
+    throw parseError(
+      "Invalid message format: expected an empty line after the address",
     )
   }
 
-  let lineIndex = 2
+  let lineIndex = 3
   let statement: string | undefined
 
-  if (lines[lineIndex] === "") {
-    lineIndex++
+  const firstLine = lines[lineIndex]
+  if (firstLine !== undefined && firstLine !== "" && !isFieldLine(firstLine)) {
+    const statementLines: string[] = []
 
-    const nextLine = lines[lineIndex]
-    const fieldPrefixes = [
-      "URI: ",
-      "Version: ",
-      "Nonce: ",
-      "Issued At: ",
-      "Expiration Time: ",
-      "Not Before: ",
-      "Request ID: ",
-      "Cluster: ",
-      "Resources:",
-    ]
-    const isFieldLine =
-      nextLine !== undefined &&
-      fieldPrefixes.some((prefix) => nextLine.startsWith(prefix))
-
-    if (!isFieldLine && nextLine !== undefined && nextLine !== "") {
-      const statementLines: string[] = []
-
-      while (lineIndex < lines.length && lines[lineIndex] !== "") {
-        statementLines.push(lines[lineIndex]!)
-        lineIndex++
-      }
-
-      if (statementLines.length > 1) {
-        throw new SiwsError(
-          SiwsErrorCode.PARSE_ERROR,
-          "Statement must be a single line (no newlines allowed)",
-        )
-      }
-
-      if (statementLines.length === 1) {
-        statement = statementLines[0]
-      }
-
-      if (lines[lineIndex] === "") {
-        lineIndex++
-      }
+    while (lineIndex < lines.length && lines[lineIndex] !== "") {
+      statementLines.push(lines[lineIndex]!)
+      lineIndex++
     }
+
+    if (statementLines.length > 1) {
+      throw parseError("Statement must be a single line (no newlines allowed)")
+    }
+
+    statement = statementLines[0]
+
+    if (lines[lineIndex] !== "") {
+      throw parseError(
+        "Invalid message format: expected an empty line after the statement",
+      )
+    }
+    lineIndex++
   }
 
-  const fields = parseFieldLines(lines.slice(lineIndex))
-  const resources = parseResources(lines, lineIndex)
+  const { fields, resources } = parseFieldLines(lines.slice(lineIndex))
 
   const uri = fields.get("URI")
   const version = fields.get("Version")
@@ -88,31 +109,19 @@ export function parseMessage(message: string): SiwsMessageFields {
   const issuedAt = fields.get("Issued At")
 
   if (!uri) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Missing required field: URI",
-    )
+    throw parseError("Missing required field: URI")
   }
   if (!version) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Missing required field: Version",
-    )
+    throw parseError("Missing required field: Version")
   }
   if (!nonce) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Missing required field: Nonce",
-    )
+    throw parseError("Missing required field: Nonce")
   }
   if (!issuedAt) {
-    throw new SiwsError(
-      SiwsErrorCode.PARSE_ERROR,
-      "Missing required field: Issued At",
-    )
+    throw parseError("Missing required field: Issued At")
   }
 
-  return {
+  const parsed: SiwsMessageFields = {
     domain,
     address,
     statement,
@@ -126,27 +135,60 @@ export function parseMessage(message: string): SiwsMessageFields {
     cluster: parseCluster(fields.get("Cluster")),
     resources,
   }
-}
 
-function parseFieldLines(lines: string[]): Map<string, string> {
-  const fields = new Map<string, string>()
-
-  for (const line of lines) {
-    if (line.startsWith("- ") || line === "" || line === "Resources:") {
-      continue
-    }
-
-    const colonIndex = line.indexOf(": ")
-    if (colonIndex === -1) {
-      continue
-    }
-
-    const key = line.substring(0, colonIndex)
-    const value = line.substring(colonIndex + 2)
-    fields.set(key, value)
+  // Final canonical-form guard: catches anything the line checks above allow
+  // but that would serialize differently (field order, empty values, an empty
+  // "Resources:" section, ...).
+  if (serializeMessage(parsed) !== message) {
+    throw parseError(
+      "Message is not in canonical SIWS format (check field order, blank lines and trailing newline)",
+    )
   }
 
-  return fields
+  return parsed
+}
+
+function parseFieldLines(lines: string[]): {
+  fields: Map<FieldKey, string>
+  resources: string[] | undefined
+} {
+  const fields = new Map<FieldKey, string>()
+  let resources: string[] | undefined
+
+  for (const line of lines) {
+    if (resources !== undefined) {
+      if (!line.startsWith("- ")) {
+        throw parseError(
+          `Invalid resource format: "${line}" (must start with "- ")`,
+        )
+      }
+      resources.push(line.substring(2))
+      continue
+    }
+
+    if (line === RESOURCES_HEADER) {
+      resources = []
+      continue
+    }
+
+    if (line === "") {
+      throw parseError("Invalid message format: unexpected empty line")
+    }
+
+    const key = FIELD_KEYS.find((k) => line.startsWith(`${k}: `))
+    if (key === undefined) {
+      throw parseError(`Invalid message format: unexpected line "${line}"`)
+    }
+    if (fields.has(key)) {
+      throw parseError(`Duplicate field: ${key}`)
+    }
+    fields.set(key, line.substring(key.length + 2))
+  }
+
+  return {
+    fields,
+    resources: resources && resources.length > 0 ? resources : undefined,
+  }
 }
 
 function parseCluster(value: string | undefined): Cluster {
@@ -165,35 +207,4 @@ function parseCluster(value: string | undefined): Cluster {
     CLUSTERS.join(" | "),
     value,
   )
-}
-
-function parseResources(
-  lines: string[],
-  startIndex: number,
-): string[] | undefined {
-  const resourcesIndex = lines
-    .slice(startIndex)
-    .findIndex((line) => line === "Resources:")
-  if (resourcesIndex === -1) {
-    return undefined
-  }
-
-  const absoluteIndex = startIndex + resourcesIndex
-  const resources: string[] = []
-
-  for (let i = absoluteIndex + 1; i < lines.length; i++) {
-    const line = lines[i]
-    if (line === "" || line === undefined) {
-      continue
-    }
-    if (!line.startsWith("- ")) {
-      throw new SiwsError(
-        SiwsErrorCode.PARSE_ERROR,
-        `Invalid resource format: "${line}" (must start with "- ")`,
-      )
-    }
-    resources.push(line.substring(2))
-  }
-
-  return resources.length > 0 ? resources : undefined
 }

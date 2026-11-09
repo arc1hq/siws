@@ -41,6 +41,26 @@ function validateVerificationContext(
   }
 }
 
+/**
+ * Verify a Base58 Ed25519 signature over a SIWS message.
+ *
+ * Steps: parse the message strictly (canonical form only), check the
+ * optional `domain` / `nonce` and the `expirationTime` / `notBefore` window,
+ * then verify the signature against the message `address`. Never throws;
+ * failures are returned as `{ success: false, error }`.
+ *
+ * **Security:** `options.domain` and `options.nonce` are optional, but
+ * omitting `domain` disables domain binding (signatures made for another site
+ * are accepted) and omitting `nonce` disables replay protection. Relying
+ * parties should pass both, using a server-issued, single-use nonce.
+ *
+ * @param message Raw message string (exact signed bytes) or a `SiwsMessage`.
+ * @param signature Base58-encoded 64-byte Ed25519 signature.
+ * @param publicKey Optional Base58 public key, e.g. the address the client
+ *   claims. If given it must equal the message `address`, otherwise the result
+ *   is an `INVALID_ADDRESS` failure. Defaults to the message `address`.
+ * @param options Domain / nonce / time checks. See `VerificationOptions`.
+ */
 export async function verifySignature(
   message: string | SiwsMessage,
   signature: string,
@@ -52,7 +72,19 @@ export async function verifySignature(
       message instanceof SiwsMessage ? message : SiwsMessage.parse(message)
     const messageString =
       message instanceof SiwsMessage ? message.toMessage() : message
-    const resolvedPublicKey = publicKey ?? siwsMessage.address
+
+    // The signer must be the account named in the message. Without this check
+    // an attacker could sign a message naming a victim's address with their
+    // own key and get back `data.address === victim`.
+    if (publicKey !== undefined && publicKey !== siwsMessage.address) {
+      throw new SiwsError(
+        SiwsErrorCode.INVALID_ADDRESS,
+        "Public key does not match message address",
+        siwsMessage.address,
+        publicKey,
+      )
+    }
+    const resolvedPublicKey = siwsMessage.address
 
     validateVerificationContext(siwsMessage, options)
 

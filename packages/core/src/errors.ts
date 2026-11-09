@@ -1,3 +1,4 @@
+/** Machine-readable error codes carried by `SiwsError.code`. */
 export enum SiwsErrorCode {
   INVALID_DOMAIN = "INVALID_DOMAIN",
   INVALID_ADDRESS = "INVALID_ADDRESS",
@@ -19,6 +20,10 @@ export enum SiwsErrorCode {
   SIGNATURE_VERIFICATION_FAILED = "SIGNATURE_VERIFICATION_FAILED",
 }
 
+/**
+ * Error thrown by message construction/parsing and returned (not thrown) by
+ * `verifySignature`. `expected` / `received` are set for mismatch errors.
+ */
 export class SiwsError extends Error {
   readonly code: SiwsErrorCode
   readonly expected?: string

@@ -9,8 +9,10 @@ import {
   SIWS_VERSION,
   NONCE_MIN_LENGTH,
   PRINTABLE_ASCII_REGEX,
+  PUBLIC_KEY_BYTE_LENGTH,
 } from "@/constants"
-import { isValidISO8601 } from "@/utils"
+import { decodeBase58, isValidISO8601 } from "@/utils"
+import { isFieldLine } from "@/parser"
 import type { Cluster, SiwsMessageFields } from "@/types"
 
 export function validateDomain(domain: string): void {
@@ -31,7 +33,11 @@ export function validateAddress(address: string): void {
     address.length >= SOLANA_ADDRESS_LENGTH.min &&
     address.length <= SOLANA_ADDRESS_LENGTH.max
 
-  if (!isValidLength || !BASE58_CHAR_REGEX.test(address)) {
+  if (
+    !isValidLength ||
+    !BASE58_CHAR_REGEX.test(address) ||
+    decodeBase58(address).length !== PUBLIC_KEY_BYTE_LENGTH
+  ) {
     throw new SiwsError(
       SiwsErrorCode.INVALID_ADDRESS,
       `Invalid Solana address: ${address}`,
@@ -85,6 +91,15 @@ export function validateStatement(statement: string): void {
     throw new SiwsError(
       SiwsErrorCode.INVALID_STATEMENT,
       "Statement must contain only printable ASCII characters (no newlines or control characters)",
+    )
+  }
+  // The parser rejects field-like statements (they could pose as a field in
+  // the wallet prompt), so refuse them here too instead of building a message
+  // that can never be parsed back.
+  if (isFieldLine(statement)) {
+    throw new SiwsError(
+      SiwsErrorCode.INVALID_STATEMENT,
+      'Statement must not look like a field line (e.g. "URI: ..." or "Resources:")',
     )
   }
 }

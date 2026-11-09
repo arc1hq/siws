@@ -337,22 +337,6 @@ https://example.com/api/resource`
   })
 
   describe("edge cases", () => {
-    it("handles empty resources section", () => {
-      const message = `example.com wants you to sign in with your Solana account:
-${VALID_ADDRESS}
-
-URI: https://example.com/auth
-Version: 1
-Nonce: abcd1234
-Issued At: 2024-01-15T12:00:00Z
-Cluster: mainnet-beta
-Resources:`
-
-      const result = parseMessage(message)
-
-      expect(result.resources).toBeUndefined()
-    })
-
     it("handles statement with special characters", () => {
       const message = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
@@ -387,22 +371,140 @@ Cluster: mainnet-beta`
 
       expect(result.requestId).toBe("req-123_abc.456")
     })
+  })
 
-    it("preserves field order independence", () => {
-      const message = `example.com wants you to sign in with your Solana account:
+  describe("strict canonical parsing", () => {
+    const CANONICAL = `example.com wants you to sign in with your Solana account:
 ${VALID_ADDRESS}
 
 URI: https://example.com/auth
-Nonce: abcd1234
 Version: 1
+Nonce: abcd1234
 Issued At: 2024-01-15T12:00:00Z
 Cluster: mainnet-beta`
 
-      const result = parseMessage(message)
+    function expectParseError(message: string, text?: string) {
+      try {
+        parseMessage(message)
+      } catch (error) {
+        expect(error).toBeInstanceOf(SiwsError)
+        expect((error as SiwsError).code).toBe(SiwsErrorCode.PARSE_ERROR)
+        if (text) expect((error as SiwsError).message).toContain(text)
+        return
+      }
+      throw new Error("expected parseMessage to throw")
+    }
 
-      expect(result.uri).toBe("https://example.com/auth")
-      expect(result.nonce).toBe("abcd1234")
-      expect(result.version).toBe("1")
+    it("accepts the canonical message", () => {
+      expect(parseMessage(CANONICAL).nonce).toBe("abcd1234")
+    })
+
+    it("rejects duplicate Nonce (last-wins smuggling)", () => {
+      const message = CANONICAL.replace(
+        "Nonce: abcd1234",
+        "Nonce: abcd1234\nNonce: efgh5678",
+      )
+      expectParseError(message, "Duplicate field: Nonce")
+    })
+
+    it("rejects duplicate URI", () => {
+      const message = CANONICAL.replace(
+        "Version: 1",
+        "URI: https://evil.com\nVersion: 1",
+      )
+      expectParseError(message, "Duplicate field: URI")
+    })
+
+    it("rejects junk line among fields", () => {
+      const message = CANONICAL.replace(
+        "Version: 1",
+        "Version: 1\nthis line is ignored by lenient parsers",
+      )
+      expectParseError(message, "unexpected line")
+    })
+
+    it("rejects unknown field", () => {
+      const message = CANONICAL.replace("Version: 1", "Version: 1\nChain ID: 1")
+      expectParseError(message, 'unexpected line "Chain ID: 1"')
+    })
+
+    it("rejects statement that looks like a field line", () => {
+      const message = `example.com wants you to sign in with your Solana account:
+${VALID_ADDRESS}
+
+URI: https://evil.com
+
+URI: https://example.com/auth
+Version: 1
+Nonce: abcd1234
+Issued At: 2024-01-15T12:00:00Z
+Cluster: mainnet-beta`
+      expectParseError(message)
+    })
+
+    it("rejects trailing newline", () => {
+      expectParseError(`${CANONICAL}\n`, "unexpected empty line")
+    })
+
+    it("rejects CRLF line endings", () => {
+      expectParseError(CANONICAL.replace(/\n/g, "\r\n"), "carriage return")
+    })
+
+    it("rejects missing blank line after address", () => {
+      expectParseError(
+        CANONICAL.replace(`${VALID_ADDRESS}\n\n`, `${VALID_ADDRESS}\n`),
+        "empty line after the address",
+      )
+    })
+
+    it("rejects extra blank line before fields", () => {
+      expectParseError(
+        CANONICAL.replace(`${VALID_ADDRESS}\n\n`, `${VALID_ADDRESS}\n\n\n`),
+      )
+    })
+
+    it("rejects blank line between fields", () => {
+      expectParseError(
+        CANONICAL.replace("Version: 1\n", "Version: 1\n\n"),
+        "unexpected empty line",
+      )
+    })
+
+    it("rejects out-of-order fields", () => {
+      const message = CANONICAL.replace(
+        "Version: 1\nNonce: abcd1234",
+        "Nonce: abcd1234\nVersion: 1",
+      )
+      expectParseError(message, "canonical")
+    })
+
+    it("rejects empty resources section", () => {
+      expectParseError(`${CANONICAL}\nResources:`, "canonical")
+    })
+
+    it("rejects field after resources", () => {
+      expectParseError(
+        `${CANONICAL}\nResources:\n- https://example.com/a\nRequest ID: x`,
+        "Invalid resource format",
+      )
+    })
+
+    it("rejects blank line inside resources", () => {
+      expectParseError(
+        `${CANONICAL}\nResources:\n- https://example.com/a\n\n- https://example.com/b`,
+        "Invalid resource format",
+      )
+    })
+
+    it("rejects trailing whitespace on the domain line", () => {
+      expectParseError(CANONICAL.replace("account:", "account: "))
+    })
+
+    it("rejects field with missing space after colon", () => {
+      expectParseError(
+        CANONICAL.replace("Version: 1", "Version:1"),
+        'unexpected line "Version:1"',
+      )
     })
   })
 })

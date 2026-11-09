@@ -3,8 +3,13 @@ import { parseMessage } from "@/parser"
 import { validateAllFields } from "@/validator"
 import { SIWS_VERSION } from "@/constants"
 import { formatISO8601 } from "@/utils"
+import { serializeMessage } from "@/serializer"
 import { SiwsError, SiwsErrorCode } from "@/errors"
 
+/**
+ * Immutable, validated SIWS message. All fields are validated on
+ * construction; invalid input throws `SiwsError`.
+ */
 export class SiwsMessage {
   readonly domain: string
   readonly address: string
@@ -36,52 +41,29 @@ export class SiwsMessage {
     this.resources = fields.resources ? [...fields.resources] : undefined
   }
 
+  /**
+   * Parse and validate a raw message string.
+   *
+   * Parsing is strict: the input must be in canonical form, i.e. exactly
+   * equal to `toMessage()` of the result (LF line endings, fixed field order,
+   * no duplicate/unknown lines, no extra blank lines or trailing newline).
+   * Throws `SiwsError` (`PARSE_ERROR` for format problems, field-specific
+   * codes for invalid values).
+   */
   static parse(message: string): SiwsMessage {
     const fields = parseMessage(message)
     return new SiwsMessage(fields)
   }
 
+  /**
+   * Serialize to the canonical SIWS message string. These are the exact bytes
+   * the wallet must sign (UTF-8, LF-separated, no trailing newline).
+   */
   toMessage(): string {
-    const lines: string[] = []
-
-    lines.push(`${this.domain} wants you to sign in with your Solana account:`)
-    lines.push(this.address)
-    lines.push("")
-
-    if (this.statement) {
-      lines.push(this.statement)
-      lines.push("")
-    }
-
-    lines.push(`URI: ${this.uri}`)
-    lines.push(`Version: ${this.version}`)
-    lines.push(`Nonce: ${this.nonce}`)
-    lines.push(`Issued At: ${this.issuedAt}`)
-
-    if (this.expirationTime) {
-      lines.push(`Expiration Time: ${this.expirationTime}`)
-    }
-
-    if (this.notBefore) {
-      lines.push(`Not Before: ${this.notBefore}`)
-    }
-
-    if (this.requestId) {
-      lines.push(`Request ID: ${this.requestId}`)
-    }
-
-    lines.push(`Cluster: ${this.cluster}`)
-
-    if (this.resources && this.resources.length > 0) {
-      lines.push("Resources:")
-      for (const resource of this.resources) {
-        lines.push(`- ${resource}`)
-      }
-    }
-
-    return lines.join("\n")
+    return serializeMessage(this)
   }
 
+  /** Return all fields as a plain object (defensive copy). */
   toFields(): SiwsMessageFields {
     return {
       domain: this.domain,
@@ -100,6 +82,13 @@ export class SiwsMessage {
   }
 }
 
+/**
+ * Fluent builder for `SiwsMessage`. `version` defaults to `"1"`; timestamp
+ * setters accept a `Date` or an ISO 8601 string. `build()` throws
+ * `MISSING_REQUIRED_FIELD` if domain, address, uri, nonce, issuedAt or
+ * cluster is unset, and otherwise validates like the `SiwsMessage`
+ * constructor.
+ */
 export class SiwsMessageBuilder {
   private fields: Partial<SiwsMessageFields> = {
     version: SIWS_VERSION,

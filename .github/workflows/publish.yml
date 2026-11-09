@@ -19,6 +19,19 @@ jobs:
       - run: pnpm --filter @siws/core build
       - run: pnpm --filter @siws/core --filter @siws/better-auth check-types
       - run: pnpm --filter @siws/core --filter @siws/better-auth lint
+      - run: pnpm --filter @siws/core --filter @siws/better-auth test
+
+      - name: Ensure packed manifests have no workspace protocol
+        run: |
+          mkdir -p "$RUNNER_TEMP/pack"
+          pnpm --filter @siws/better-auth build
+          (cd packages/core && pnpm pack --pack-destination "$RUNNER_TEMP/pack")
+          (cd packages/better-auth && pnpm pack --pack-destination "$RUNNER_TEMP/pack")
+          for t in "$RUNNER_TEMP"/pack/*.tgz; do
+            if tar -xzOf "$t" package/package.json | grep -q '"workspace:'; then
+              echo "::error::$t contains a workspace: dependency"; exit 1
+            fi
+          done
 
   check-versions:
     runs-on: ubuntu-latest
@@ -71,8 +84,10 @@ jobs:
       - run: npm install -g npm@latest
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
-      - run: npm publish --access public --provenance
+      # pnpm pack rewrites workspace: dependencies to real versions; npm publish does not.
+      - run: pnpm pack --pack-destination "$RUNNER_TEMP"
         working-directory: packages/core
+      - run: npm publish "$RUNNER_TEMP"/*.tgz --access public --provenance
 
   publish-better-auth:
     needs: [check, check-versions, publish-core]
@@ -98,5 +113,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @siws/core build
       - run: pnpm --filter @siws/better-auth build
-      - run: npm publish --access public --provenance
+      # pnpm pack rewrites workspace: dependencies to real versions; npm publish does not.
+      - run: pnpm pack --pack-destination "$RUNNER_TEMP"
         working-directory: packages/better-auth
+      - run: npm publish "$RUNNER_TEMP"/*.tgz --access public --provenance

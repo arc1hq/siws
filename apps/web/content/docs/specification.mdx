@@ -68,10 +68,10 @@ Resources:
 
 | Field | Description | Format |
 |-------|-------------|--------|
-| `statement` | Human-readable purpose description | UTF-8 string, no `\n` |
+| `statement` | Human-readable purpose description | Printable ASCII (`%x20-7E`), single line |
 | `expirationTime` | Message expiration timestamp | ISO 8601 datetime |
 | `notBefore` | Message validity start timestamp | ISO 8601 datetime |
-| `requestId` | Application-specific request identifier | String |
+| `requestId` | Application-specific request identifier | Printable ASCII (`%x20-7E`) |
 | `resources` | Resources being authorized | Array of RFC 3986 URIs |
 
 ## Field Definitions
@@ -82,7 +82,7 @@ RFC 3986 authority matching the requesting origin. MUST NOT include a scheme or 
 
 ### address
 
-Base58-encoded Ed25519 public key (32 bytes, 43-44 characters). The signature MUST be verified against this key.
+Base58-encoded Ed25519 public key. It MUST decode to exactly 32 bytes (32-44 characters; almost always 43-44). The signature MUST be verified against this key. If the relying party also receives a claimed address or public key out of band, it MUST be equal to `address`.
 
 ### uri
 
@@ -105,7 +105,7 @@ At least 8 alphanumeric characters from a CSPRNG. Relying parties MUST:
 
 ### issuedAt
 
-ISO 8601 datetime in UTC (`Z` suffix).
+ISO 8601 datetime in UTC: `YYYY-MM-DDTHH:mm:ss[.sss]Z`. It MUST name a real calendar instant (e.g. `2024-02-30`, hour `24` and minute `60` are invalid). The same rule applies to `expirationTime` and `notBefore`.
 
 ### statement
 
@@ -113,13 +113,13 @@ OPTIONAL. MUST NOT contain newline characters. SHOULD describe the authenticatio
 
 ### expirationTime
 
-OPTIONAL. Relying parties MUST reject messages past this time.
+OPTIONAL. Relying parties MUST reject messages at or after this time.
 
 **Recommendation**: 5-15 minutes from `issuedAt`.
 
 ### notBefore
 
-OPTIONAL. Relying parties MUST reject messages before this time.
+OPTIONAL. Relying parties MUST reject messages strictly before this time.
 
 ### cluster
 
@@ -133,10 +133,12 @@ OPTIONAL. Each resource MUST be a valid RFC 3986 URI.
 
 Solana uses Ed25519 for message signing. Verification MUST proceed as follows:
 
-1. Encode the message string as UTF-8 bytes
-2. Decode the signature from Base58 (64 bytes)
-3. Decode the public key from Base58 (32 bytes)
-4. Verify using Ed25519: `ed25519.verify(signature, message, publicKey)`
+1. Parse the message string strictly (see [Canonical Form](#canonical-form)) and reject it if it is not canonical
+2. If a public key was supplied separately, reject it unless it equals the message `address`
+3. Encode the message string as UTF-8 bytes
+4. Decode the signature from Base58 (64 bytes)
+5. Decode the `address` from Base58 (32 bytes)
+6. Verify using Ed25519: `ed25519.verify(signature, message, address)`
 
 ## Message Grammar
 
@@ -152,12 +154,12 @@ address-line    = address
 statement-line  = statement
 
 field-lines     = uri-field LF version-field LF nonce-field LF
-                  issued-at-field LF
-                  [ expiration-field LF ]
-                  [ not-before-field LF ]
-                  [ request-id-field LF ]
-                  cluster-field LF
-                  [ resources-field ]
+                  issued-at-field
+                  [ LF expiration-field ]
+                  [ LF not-before-field ]
+                  [ LF request-id-field ]
+                  LF cluster-field
+                  [ LF resources-field ]
 
 uri-field       = "URI: " uri
 version-field   = "Version: " version
@@ -167,11 +169,10 @@ expiration-field = "Expiration Time: " iso8601-datetime
 not-before-field = "Not Before: " iso8601-datetime
 request-id-field = "Request ID: " request-id
 cluster-field   = "Cluster: " cluster
-resources-field = "Resources:" LF resource-list
-resource-list   = 1*( "- " uri LF )
+resources-field = "Resources:" 1*( LF "- " uri )
 
 domain          = authority                    ; RFC 3986
-address         = 43*44BASE58CHAR
+address         = 32*44BASE58CHAR            ; MUST decode to 32 bytes
 uri             = URI                          ; RFC 3986
 version         = "1"
 nonce           = 8*ALPHANUM
@@ -185,15 +186,39 @@ BASE58CHAR      = %x31-39 / %x41-48 / %x4A-4E / %x50-5A / %x61-6B / %x6D-7A
 LF              = %x0A
 ```
 
+The message ends immediately after the last field or resource. There is no trailing `LF`.
+
+## Canonical Form
+
+Signatures cover the exact message bytes, so a verifier MUST accept only one textual form per set of fields. A message is canonical when it matches the grammar above exactly. Verifiers MUST reject (with a parse error) any message that:
+
+- uses `CR` or `CRLF` line endings, or ends with a trailing `LF`
+- contains fields out of the order given in the grammar
+- repeats a field (for example two `Nonce:` lines)
+- contains unknown fields or lines that match no rule
+- has extra or missing blank lines, or a field separator other than `": "`
+- has a statement that looks like a field line (for example `URI: ...`)
+- has a `Resources:` line with no resource entries
+
+A simple way to enforce this is to parse the message, serialize the parsed fields back into a string, and reject the message unless the two strings are identical. `@siws/core` does this.
+
 ## Security Considerations
 
 ### Replay Attacks
 
-Captured signatures reused for unauthorized authentication. Single-use nonces MUST be enforced with expiration (RECOMMENDED: 5 minutes). `expirationTime` provides defense in depth.
+Captured signatures reused for unauthorized authentication. Single-use nonces MUST be enforced with expiration (RECOMMENDED: 5 minutes). `expirationTime` provides defense in depth. A verifier that does not compare the message nonce with a server-issued nonce has no replay protection.
 
 ### Cross-Site Request Forgery
 
 Signatures obtained from one site used on another. `domain` MUST be verified server-side and `uri` binds authentication to a specific endpoint. Relying parties MUST reject domain/URI mismatches.
+
+### Account Substitution
+
+A message naming one address can be signed by a different key. Verifiers MUST verify the signature against the message `address`, and MUST reject the message if a separately supplied public key or claimed address differs from it. Otherwise an attacker could sign a message naming a victim's address with their own key.
+
+### Parser Ambiguity
+
+If parsers ignore unknown lines or let a repeated field override an earlier one, the fields a wallet displays and the fields a server acts on can differ (for example `Nonce: a` followed by `Nonce: b`). Verifiers MUST accept only the [canonical form](#canonical-form).
 
 ### Phishing
 

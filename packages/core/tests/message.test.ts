@@ -118,8 +118,62 @@ Cluster: mainnet-beta`
       expect(message.statement).toBe("Sign in to Example")
     })
 
+    it.each(["Version: 2 of MyApp", "URI: see below", "Resources:"])(
+      "refuses to build a statement the parser would reject (%s)",
+      (statement) => {
+        const builder = new SiwsMessageBuilder()
+          .domain("example.com")
+          .address(VALID_ADDRESS)
+          .uri("https://example.com/auth")
+          .nonce("abcd1234")
+          .issuedAt("2024-01-15T12:00:00Z")
+          .cluster("mainnet-beta")
+          .statement(statement)
+
+        expect(() => builder.build()).toThrow(
+          expect.objectContaining({ code: SiwsErrorCode.INVALID_STATEMENT }),
+        )
+      },
+    )
+
     it("throws on invalid message string", () => {
       expect(() => SiwsMessage.parse("invalid message")).toThrow(SiwsError)
+    })
+
+    it("only accepts input equal to its own toMessage()", () => {
+      const canonical = new SiwsMessage({
+        domain: "example.com",
+        address: VALID_ADDRESS,
+        uri: "https://example.com/auth",
+        version: "1",
+        nonce: "abcd1234",
+        issuedAt: "2024-01-15T12:00:00Z",
+        cluster: "mainnet-beta",
+        statement: "Sign in to Example",
+        resources: ["https://example.com/api"],
+      }).toMessage()
+
+      expect(SiwsMessage.parse(canonical).toMessage()).toBe(canonical)
+
+      for (const variant of [
+        `${canonical}\n`,
+        canonical.replace(/\n/g, "\r\n"),
+        canonical.replace(
+          "Nonce: abcd1234",
+          "Nonce: abcd1234\nNonce: efgh5678",
+        ),
+        canonical.replace("Version: 1", "Version: 1\njunk"),
+      ]) {
+        try {
+          SiwsMessage.parse(variant)
+          throw new Error(
+            `accepted non-canonical input: ${JSON.stringify(variant)}`,
+          )
+        } catch (error) {
+          expect(error).toBeInstanceOf(SiwsError)
+          expect((error as SiwsError).code).toBe(SiwsErrorCode.PARSE_ERROR)
+        }
+      }
     })
   })
 

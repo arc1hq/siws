@@ -113,6 +113,13 @@ describe("generateNonce", () => {
     expect(() => generateNonce(-1)).toThrow()
   })
 
+  it("throws when length is not an integer", () => {
+    // previously: NaN returned "" and 8.5 looped forever
+    expect(() => generateNonce(Number.NaN)).toThrow()
+    expect(() => generateNonce(8.5)).toThrow()
+    expect(() => generateNonce(Number.POSITIVE_INFINITY)).toThrow()
+  })
+
   it("generates only Base58 characters", () => {
     const nonce = generateNonce(100)
     for (const char of nonce) {
@@ -192,6 +199,41 @@ describe("isValidISO8601", () => {
   it("accepts leap year date", () => {
     expect(isValidISO8601("2024-02-29T12:00:00Z")).toBe(true)
   })
+
+  it("rejects Feb 29 on a non-leap year", () => {
+    expect(isValidISO8601("2023-02-29T12:00:00Z")).toBe(false)
+    expect(isValidISO8601("1900-02-29T12:00:00Z")).toBe(false)
+  })
+
+  it("accepts Feb 29 on a 400-year leap year", () => {
+    expect(isValidISO8601("2000-02-29T12:00:00Z")).toBe(true)
+  })
+
+  it("rejects day that overflows the month (Feb 30)", () => {
+    expect(isValidISO8601("2024-02-30T00:00:00Z")).toBe(false)
+    expect(isValidISO8601("2024-04-31T00:00:00Z")).toBe(false)
+  })
+
+  it("rejects hour 24", () => {
+    expect(isValidISO8601("2024-01-15T24:00:00Z")).toBe(false)
+  })
+
+  it("rejects minute 60", () => {
+    expect(isValidISO8601("2024-01-15T12:60:00Z")).toBe(false)
+  })
+
+  it("rejects second 60", () => {
+    expect(isValidISO8601("2024-01-15T12:00:60Z")).toBe(false)
+  })
+
+  it("rejects month 00 and day 00", () => {
+    expect(isValidISO8601("2024-00-15T12:00:00Z")).toBe(false)
+    expect(isValidISO8601("2024-01-00T12:00:00Z")).toBe(false)
+  })
+
+  it("accepts end-of-day boundaries", () => {
+    expect(isValidISO8601("2024-12-31T23:59:59.999Z")).toBe(true)
+  })
 })
 
 describe("parseISO8601", () => {
@@ -243,9 +285,15 @@ describe("isExpired", () => {
     expect(isExpired(expiration, now)).toBe(false)
   })
 
-  it("returns false when current time equals expiration", () => {
+  it("returns true when current time equals expiration", () => {
     const expiration = "2024-01-15T12:00:00Z"
     const now = new Date("2024-01-15T12:00:00Z")
+    expect(isExpired(expiration, now)).toBe(true)
+  })
+
+  it("returns false 1ms before expiration", () => {
+    const expiration = "2024-01-15T12:00:00Z"
+    const now = new Date("2024-01-15T11:59:59.999Z")
     expect(isExpired(expiration, now)).toBe(false)
   })
 

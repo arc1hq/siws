@@ -13,6 +13,7 @@ import {
   validateAllFields,
 } from "@/validator"
 import { SiwsError, SiwsErrorCode } from "@/errors"
+import type { Cluster, SiwsMessageFields } from "@/types"
 
 const VALID_ADDRESS = "7xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAsU"
 
@@ -74,8 +75,21 @@ describe("validateAddress", () => {
 
   it("accepts valid 43-character address", () => {
     expect(() =>
-      validateAddress("2xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAs"),
+      validateAddress("YYDdiB94xbsiMwRmrziWFzUWcpGntJZfX5nA1kDKTwM"),
     ).not.toThrow()
+  })
+
+  it("accepts 32-byte key with short encoding (leading zero bytes)", () => {
+    expect(() =>
+      validateAddress("11111111111111111111111111111112"),
+    ).not.toThrow()
+  })
+
+  it("rejects Base58 string that does not decode to 32 bytes", () => {
+    // 43 valid Base58 characters, but decodes to 31 bytes
+    expect(() =>
+      validateAddress("2xKXtg2CW87d97TXJSDpbD5jBkheTqA83TZRuJosgAs"),
+    ).toThrow(SiwsError)
   })
 
   it("rejects empty address", () => {
@@ -273,6 +287,10 @@ describe("validateTimestamp", () => {
 
   it("rejects invalid date", () => {
     expect(() => validateTimestamp("2024-13-45T99:99:99Z")).toThrow(SiwsError)
+  })
+
+  it("rejects non-existent calendar date", () => {
+    expect(() => validateTimestamp("2024-02-30T00:00:00Z")).toThrow(SiwsError)
   })
 
   it("rejects date-only format", () => {
@@ -527,15 +545,16 @@ describe("validateAllFields", () => {
   })
 
   it("rejects missing cluster", () => {
-    const { cluster: _, ...fieldsWithoutCluster } = validFields
-    expect(() => validateAllFields({ ...fieldsWithoutCluster } as any)).toThrow(
-      SiwsError,
-    )
+    const fieldsWithoutCluster: Partial<SiwsMessageFields> = { ...validFields }
+    delete fieldsWithoutCluster.cluster
+    expect(() =>
+      validateAllFields(fieldsWithoutCluster as SiwsMessageFields),
+    ).toThrow(SiwsError)
   })
 
   it("rejects invalid cluster", () => {
     expect(() =>
-      validateAllFields({ ...validFields, cluster: "invalid" as any }),
+      validateAllFields({ ...validFields, cluster: "invalid" as Cluster }),
     ).toThrow(SiwsError)
   })
 

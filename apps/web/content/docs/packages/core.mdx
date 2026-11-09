@@ -39,9 +39,20 @@ const fields = message.toFields()
 
 | Method | Returns | Description |
 |--------|---------|-------------|
-| `static parse(message: string)` | `SiwsMessage` | Parse and validate a raw message string |
+| `static parse(message: string)` | `SiwsMessage` | Parse and validate a raw message string (canonical form only) |
 | `toMessage()` | `string` | Serialize to the canonical string format |
 | `toFields()` | `SiwsMessageFields` | Extract fields as a plain object |
+
+### Strict parsing
+
+`parse()` only accepts a message in canonical form: the input must be byte-for-byte equal to `toMessage()` of the parsed result. It throws `PARSE_ERROR` for:
+
+- CRLF line endings or a trailing newline
+- fields out of order, duplicate fields (e.g. two `Nonce:` lines), unknown fields, or junk lines
+- extra or missing blank lines, or a statement that looks like a field line (e.g. `URI: ...`)
+- an empty `Resources:` section
+
+One signed string therefore maps to exactly one set of fields. `verifySignature` applies the same rule to string input, so pass it the exact string the wallet signed.
 
 ## SiwsMessageBuilder
 
@@ -91,10 +102,10 @@ import { verifySignature } from '@siws/core'
 const result = await verifySignature(
   messageString,  // raw message string or SiwsMessage
   signature,      // Base58-encoded Ed25519 signature
-  publicKey,      // optional -- defaults to address in message
+  publicKey,      // optional -- must equal the address in the message
   {
-    domain: 'example.com',  // optional domain check
-    nonce: expectedNonce,    // optional nonce check
+    domain: 'example.com',  // domain check (omit = no domain binding)
+    nonce: expectedNonce,    // nonce check (omit = no replay protection)
     time: new Date(),        // optional time override
   }
 )
@@ -112,17 +123,21 @@ if (result.success) {
 |-----------|------|-------------|
 | `message` | `string \| SiwsMessage` | The message to verify |
 | `signature` | `string` | Base58-encoded Ed25519 signature (64 bytes) |
-| `publicKey` | `string?` | Base58-encoded public key. Defaults to the `address` field in the message |
-| `options` | `VerificationOptions?` | Optional domain, nonce, and time checks |
+| `publicKey` | `string?` | Base58-encoded public key, e.g. the address the client claims. If given, it must equal the message `address`, otherwise verification fails with `INVALID_ADDRESS`. Defaults to the message `address` |
+| `options` | `VerificationOptions?` | Domain, nonce, and time checks |
+
+The signature is always verified against the `address` in the message. `verifySignature` never throws; failures are returned as `{ success: false, error }`.
+
+> **Warning:** `domain` and `nonce` are optional, but omitting `domain` disables domain binding (a signature made for another site is accepted) and omitting `nonce` disables replay protection. Always pass both on the server, using a server-issued, single-use nonce.
 
 ### VerificationResult
 
+A discriminated union on `success`, so `if (result.success)` narrows `data` and the `else` branch narrows `error`:
+
 ```ts
-interface VerificationResult {
-  success: boolean
-  data?: SiwsMessageFields  // parsed fields on success
-  error?: SiwsError          // error details on failure
-}
+type VerificationResult =
+  | { success: true; data: SiwsMessageFields; error?: undefined }
+  | { success: false; error: SiwsError; data?: undefined }
 ```
 
 ## generateNonce
@@ -182,20 +197,20 @@ All error codes:
 | Code | When |
 |------|------|
 | `INVALID_DOMAIN` | Domain format validation fails |
-| `INVALID_ADDRESS` | Not a valid Base58 Solana address |
+| `INVALID_ADDRESS` | Not a Base58 string that decodes to a 32-byte key, or `publicKey` does not match the message address |
 | `INVALID_URI` | URI format validation fails |
 | `INVALID_VERSION` | Version is not `'1'` |
 | `INVALID_NONCE` | Nonce too short or not alphanumeric |
-| `INVALID_TIMESTAMP` | Not a valid ISO 8601 datetime |
+| `INVALID_TIMESTAMP` | Not a valid UTC ISO 8601 datetime or not a real calendar date (e.g. Feb 30) |
 | `INVALID_STATEMENT` | Contains newlines or non-printable chars |
 | `INVALID_CLUSTER` | Not a recognized cluster value |
 | `INVALID_RESOURCE` | Resource URI format invalid |
 | `INVALID_SIGNATURE` | Signature is not valid Base58 or wrong length |
 | `INVALID_REQUEST_ID` | Contains non-printable characters |
-| `MESSAGE_EXPIRED` | Current time exceeds `expirationTime` |
+| `MESSAGE_EXPIRED` | Current time is at or after `expirationTime` |
 | `MESSAGE_NOT_YET_VALID` | Current time precedes `notBefore` |
 | `DOMAIN_MISMATCH` | Message domain doesn't match expected |
 | `NONCE_MISMATCH` | Message nonce doesn't match expected |
-| `PARSE_ERROR` | Message string cannot be parsed |
+| `PARSE_ERROR` | Message string cannot be parsed or is not in canonical form |
 | `MISSING_REQUIRED_FIELD` | A required field is missing |
 | `SIGNATURE_VERIFICATION_FAILED` | Ed25519 verification returned false |

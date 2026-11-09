@@ -1,9 +1,9 @@
 {
   "name": "@siws/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "license": "MIT",
   "description": "Core library for Sign In With Solana",
-  "author": "osiws contributors",
+  "author": "siws contributors",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arc1hq/siws.git",
@@ -60,10 +60,10 @@
   },
   "dependencies": {
     "@noble/curves": "^1.8.1",
-    "bs58": "^6.0.0"
+    "@scure/base": "^1.2.6"
   },
   "sideEffects": false,
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
