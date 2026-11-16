@@ -11,7 +11,8 @@ export const shellLayer = stylex.defineConsts({
 })
 
 export const accent = stylex.defineVars({
-  ink: "light-dark(oklch(0.55 0.2 285), oklch(0.74 0.15 285))",
-  wash: "light-dark(oklch(0.55 0.2 285 / 7%), oklch(0.74 0.15 285 / 12%))",
-  edge: "light-dark(oklch(0.55 0.2 285 / 22%), oklch(0.74 0.15 285 / 28%))",
+  seal: "light-dark(oklch(0.53 0.2 263), oklch(0.66 0.17 258))",
+  ink: "light-dark(oklch(0.5 0.19 263), oklch(0.74 0.14 255))",
+  wash: "light-dark(oklch(0.53 0.2 263 / 8%), oklch(0.66 0.17 258 / 14%))",
+  edge: "light-dark(oklch(0.53 0.2 263 / 24%), oklch(0.66 0.17 258 / 32%))",
 })

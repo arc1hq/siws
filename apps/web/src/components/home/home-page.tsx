@@ -94,6 +94,13 @@ export const homeStyles = stylex.create({
     lineHeight: leading.xs,
     color: color.mutedForeground,
   },
+  footLink: {
+    color: { default: color.mutedForeground, ":hover": color.foreground },
+    textDecorationLine: { default: "none", ":hover": "underline" },
+    textUnderlineOffset: "3px",
+    transitionProperty: "color",
+    transitionDuration: duration.color,
+  },
 })
 
 export function PackageLink({ href, name, children }: { href: string; name: string; children: ReactNode }) {

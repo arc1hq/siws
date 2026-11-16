@@ -41,7 +41,7 @@ import {
   text,
 } from "@ui/theme/tokens.stylex"
 
-const codeCommand = "light-dark(oklch(0.49 0.19 295), oklch(0.73 0.13 300))"
+const codeCommand = "light-dark(oklch(0.5 0.19 263), oklch(0.74 0.14 255))"
 
 type ButtonProps = ComponentProps<typeof Button>
 

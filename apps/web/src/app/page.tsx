@@ -40,8 +40,12 @@ export default function Home() {
       </nav>
 
       <footer {...stylex.props(s.foot)}>
-        <span>MIT</span>
-        <span>v{siteConfig.version}</span>
+        <a href={siteConfig.links.license} target="_blank" rel="noopener noreferrer" {...stylex.props(s.footLink)}>
+          MIT
+        </a>
+        <a href={siteConfig.links.release} target="_blank" rel="noopener noreferrer" {...stylex.props(s.footLink)}>
+          v{siteConfig.version}
+        </a>
       </footer>
     </HomeShell>
   )

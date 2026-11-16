@@ -21,6 +21,8 @@ export const siteConfig = {
     github: "https://github.com/arc1hq/siws",
     x: "https://x.com/rds_agi",
     npm: "https://www.npmjs.com/org/siws",
+    license: "https://github.com/arc1hq/siws/blob/main/LICENSE",
+    release: "https://www.npmjs.com/package/@siws/core/v/0.2.0",
   },
 } as const
 

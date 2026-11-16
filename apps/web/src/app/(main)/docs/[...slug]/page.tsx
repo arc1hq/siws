@@ -11,9 +11,8 @@ import { PageActions } from "@/components/docs/page-actions"
 import { DocsToc } from "@/components/docs/toc"
 import { MDXContentRenderer } from "@/components/mdx/renderer"
 import { getAdjacentPages } from "@/lib/get-adjacent-pages"
-import { navSections } from "@/lib/nav-data"
 import { siteConfig } from "@/lib/site"
-import { accent, shell } from "@/styles/shell.stylex"
+import { shell } from "@/styles/shell.stylex"
 
 const styles = stylex.create({
   frame: {
@@ -39,22 +38,10 @@ const styles = stylex.create({
   topline: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     gap: space.s4,
     flexWrap: "wrap",
   },
-  eyebrow: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: space.s2,
-    fontFamily: font.mono,
-    fontSize: "0.6875rem",
-    lineHeight: leading.xs,
-    letterSpacing: "0.04em",
-    textTransform: "uppercase",
-    color: color.mutedForeground,
-  },
-  dot: { width: 6, height: 6, borderRadius: 9999, backgroundColor: accent.ink },
   title: {
     fontSize: { default: text.xl3, [breakpoints.md]: text.xl4 },
     lineHeight: { default: leading.xl3, [breakpoints.md]: leading.xl4 },
@@ -101,6 +88,11 @@ const styles = stylex.create({
     color: { default: color.mutedForeground, ":hover": color.foreground },
   },
   editIcon: { width: space.s3_5, height: space.s3_5 },
+  footLink: {
+    color: { default: color.mutedForeground, ":hover": color.foreground },
+    textDecorationLine: { default: "none", ":hover": "underline" },
+    textUnderlineOffset: "3px",
+  },
 })
 
 function getDoc(slugParts: string[]) {
@@ -126,7 +118,6 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
 
   const href = `/docs/${doc.slugAsParams}`
   const { prev, next } = getAdjacentPages(href)
-  const section = navSections.find((s) => s.items.some((item) => item.href === href))?.title
   const editPath = `apps/web/content/docs/${doc.slugAsParams}.mdx`
 
   return (
@@ -134,10 +125,6 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
       <article {...stylex.props(styles.article)}>
         <header {...stylex.props(styles.header)}>
           <div {...stylex.props(styles.topline)}>
-            <span {...stylex.props(styles.eyebrow)}>
-              <span aria-hidden {...stylex.props(styles.dot)} />
-              {section ?? "Docs"}
-            </span>
             <PageActions markdownHref={`${href}.md`} prev={prev} next={next} />
           </div>
           <h1 {...stylex.props(styles.title, doc.title.startsWith("@") && styles.titleMono)}>{doc.title}</h1>
@@ -160,7 +147,15 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
             <PencilSimpleIcon aria-hidden {...stylex.props(styles.editIcon)} />
             Edit this page on GitHub
           </a>
-          <span>MIT licensed · SIWS v{siteConfig.version}</span>
+          <span>
+            <a href={siteConfig.links.license} target="_blank" rel="noopener noreferrer" {...stylex.props(styles.footLink)}>
+              MIT
+            </a>
+            {" · "}
+            <a href={siteConfig.links.release} target="_blank" rel="noopener noreferrer" {...stylex.props(styles.footLink)}>
+              v{siteConfig.version}
+            </a>
+          </span>
         </footer>
       </article>
 

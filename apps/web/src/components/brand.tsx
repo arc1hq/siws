@@ -1,6 +1,7 @@
 import Link from "next/link"
 import * as stylex from "@stylexjs/stylex"
 import { color, leading, radius, space, text, tracking } from "@ui/theme/tokens.stylex"
+import { accent } from "@/styles/shell.stylex"
 
 const styles = stylex.create({
   link: {
@@ -14,9 +15,9 @@ const styles = stylex.create({
     outlineOffset: 2,
     outlineColor: color.ring,
   },
-  mark: { width: space.s6, height: space.s6, flexShrink: 0 },
-  tile: { fill: color.foreground },
-  stroke: { stroke: color.background },
+  mark: { width: space.s5, height: space.s5, flexShrink: 0 },
+  ink: { fill: color.foreground },
+  key: { fill: accent.seal },
   word: {
     fontSize: text.base,
     lineHeight: leading.base,
@@ -25,19 +26,13 @@ const styles = stylex.create({
   },
 })
 
+const overlap = "M13 9H15V11A4 4 0 0 1 11 15H9V13A4 4 0 0 1 13 9Z"
+
 export function BrandMark({ xstyle }: { xstyle?: stylex.StyleXStyles }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden {...stylex.props(styles.mark, xstyle)}>
-      <rect width="24" height="24" rx="6.5" {...stylex.props(styles.tile)} />
-      <path
-        d="M5.5 15.25c1.6-3.4 2.9-5.75 4-5.75 1.4 0 .4 5.5 2.1 5.5 1.5 0 2-3.75 3.4-3.75 1 0 1.1 1.9 3.5 1.9"
-        fill="none"
-        strokeWidth="1.75"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        {...stylex.props(styles.stroke)}
-      />
-      <path d="M6 18h12" strokeWidth="1.25" strokeLinecap="round" {...stylex.props(styles.stroke)} opacity="0.45" />
+      <path fillRule="evenodd" d={`M6 2h5a4 4 0 0 1 4 4v5a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z${overlap}`} {...stylex.props(styles.ink)} />
+      <path fillRule="evenodd" d={`M13 9h5a4 4 0 0 1 4 4v5a4 4 0 0 1-4 4h-5a4 4 0 0 1-4-4v-5a4 4 0 0 1 4-4z${overlap}`} {...stylex.props(styles.key)} />
     </svg>
   )
 }

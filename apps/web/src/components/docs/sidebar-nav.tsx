@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation"
 import * as stylex from "@stylexjs/stylex"
 import { color, duration, ease, font, leading, radius, space, text } from "@ui/theme/tokens.stylex"
 import { navSections } from "@/lib/nav-data"
-import { accent } from "@/styles/shell.stylex"
 
 const styles = stylex.create({
   nav: { display: "flex", flexDirection: "column", rowGap: space.s6 },
@@ -47,15 +46,6 @@ const styles = stylex.create({
     fontWeight: 500,
     backgroundColor: color.itemHighlightBg,
     boxShadow: `inset 0 0 0 1px ${color.itemHighlightRing}`,
-    "::before": {
-      content: "''",
-      position: "absolute",
-      insetInlineStart: 0,
-      insetBlock: space.s2,
-      width: 2,
-      borderRadius: radius.full,
-      backgroundColor: accent.ink,
-    },
   },
 })
 

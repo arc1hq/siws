@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react"
 import * as stylex from "@stylexjs/stylex"
 import { color, duration, ease, font, leading, space, text } from "@ui/theme/tokens.stylex"
-import { accent } from "@/styles/shell.stylex"
 
 type TocEntry = { title: string; url: string; items?: TocEntry[] }
 type Item = { title: string; url: string; depth: number }
@@ -47,7 +46,7 @@ const styles = stylex.create({
   depth4: { paddingInlineStart: space.s8 },
   active: {
     color: color.foreground,
-    "::before": { backgroundColor: accent.ink, width: 2 },
+    "::before": { backgroundColor: color.foreground, width: 2 },
   },
 })
 

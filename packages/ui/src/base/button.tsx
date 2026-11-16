@@ -21,11 +21,11 @@ import {
 
 const buttonGhostHoverBg = `light-dark(${color.muted}, color-mix(in oklab, ${color.muted} 50%, transparent))`
 const buttonDestructiveFill = "oklch(0.577 0.245 27.325)"
-const buttonDestructiveForeground = "oklch(0.985 0 0)"
+const buttonDestructiveForeground = "oklch(0.982 0.0026 255)"
 const buttonDestructiveEdge = "oklch(0 0 0 / 20%)"
 const buttonDestructiveSheen = "oklch(1 0 0 / 20%)"
 const buttonReflection = "oklch(1 0 0 / 10%)"
-const keyHoverBg = "light-dark(oklch(0.96 0 0), oklch(0.245 0 0))"
+const keyHoverBg = "light-dark(oklch(0.957 0.0036 255), oklch(0.245 0.014 262))"
 
 type ButtonGroupOrientation = "horizontal" | "vertical"
 
