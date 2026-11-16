@@ -33,8 +33,8 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon-light.svg", media: "(prefers-color-scheme: light)" },
-      { url: "/favicon-dark.svg", media: "(prefers-color-scheme: dark)" },
+      { url: "/favicon-light.svg?v=2", media: "(prefers-color-scheme: light)" },
+      { url: "/favicon-dark.svg?v=2", media: "(prefers-color-scheme: dark)" },
     ],
   },
 }

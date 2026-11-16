@@ -35,14 +35,20 @@ const styles = stylex.create({
     borderBlockEndWidth: 1,
     borderBlockEndStyle: "solid",
   },
-  topline: {
+  titleRow: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "flex-end",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     gap: space.s4,
-    flexWrap: "wrap",
+    flexWrap: { default: "wrap-reverse", [breakpoints.md]: "nowrap" },
+  },
+  actions: {
+    flexShrink: 0,
+    marginBlockStart: { default: 0, [breakpoints.md]: space.s1 },
+    marginInlineStart: "auto",
   },
   title: {
+    minWidth: 0,
     fontSize: { default: text.xl3, [breakpoints.md]: text.xl4 },
     lineHeight: { default: leading.xl3, [breakpoints.md]: leading.xl4 },
     fontWeight: 600,
@@ -52,8 +58,8 @@ const styles = stylex.create({
   titleMono: { fontFamily: font.mono, letterSpacing: "-0.04em" },
   excerpt: {
     maxWidth: "40rem",
-    fontSize: text.lg,
-    lineHeight: leading.lg,
+    fontSize: text.base,
+    lineHeight: leading.base,
     color: color.mutedForeground,
     textWrap: "pretty",
   },
@@ -124,10 +130,12 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     <div {...stylex.props(styles.frame)}>
       <article {...stylex.props(styles.article)}>
         <header {...stylex.props(styles.header)}>
-          <div {...stylex.props(styles.topline)}>
-            <PageActions markdownHref={`${href}.md`} prev={prev} next={next} />
+          <div {...stylex.props(styles.titleRow)}>
+            <h1 {...stylex.props(styles.title, doc.title.startsWith("@") && styles.titleMono)}>{doc.title}</h1>
+            <div {...stylex.props(styles.actions)}>
+              <PageActions markdownHref={`${href}.md`} prev={prev} next={next} />
+            </div>
           </div>
-          <h1 {...stylex.props(styles.title, doc.title.startsWith("@") && styles.titleMono)}>{doc.title}</h1>
           {doc.excerpt && <p {...stylex.props(styles.excerpt)}>{doc.excerpt}</p>}
         </header>
 
