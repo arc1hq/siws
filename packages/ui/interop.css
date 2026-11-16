@@ -1,0 +1,261 @@
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@property --scroll-fade-t {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-b {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-s {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-e {
+  syntax: "<length-percentage>";
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --scroll-fade-mask {
+  syntax: "*";
+  inherits: false;
+}
+
+@keyframes scroll-fade-reveal-t {
+  from {
+    --scroll-fade-t: 0px;
+  }
+  to {
+    --scroll-fade-t: var(--_scroll-fade-size-t, min(12%, 2.5rem));
+  }
+}
+
+@keyframes scroll-fade-reveal-b {
+  from {
+    --scroll-fade-b: var(--_scroll-fade-size-b, min(12%, 2.5rem));
+  }
+  to {
+    --scroll-fade-b: 0px;
+  }
+}
+
+@keyframes scroll-fade-reveal-s {
+  from {
+    --scroll-fade-s: 0px;
+  }
+  to {
+    --scroll-fade-s: var(--_scroll-fade-size-s, min(12%, 2.5rem));
+  }
+}
+
+@keyframes scroll-fade-reveal-e {
+  from {
+    --scroll-fade-e: var(--_scroll-fade-size-e, min(12%, 2.5rem));
+  }
+  to {
+    --scroll-fade-e: 0px;
+  }
+}
+
+.scroll-fade-y {
+  --_scroll-fade-size-t: var(--scroll-fade-t-size, var(--scroll-fade-size, min(12%, 2.5rem)));
+  --_scroll-fade-size-b: var(--scroll-fade-b-size, var(--scroll-fade-size, min(12%, 2.5rem)));
+  --scroll-fade-block: linear-gradient(
+    to bottom,
+    transparent 0,
+    #000 var(--scroll-fade-t, 0px),
+    #000 calc(100% - var(--scroll-fade-b, 0px)),
+    transparent 100%
+  );
+  -webkit-mask-image: var(--scroll-fade-mask, var(--scroll-fade-block));
+  mask-image: var(--scroll-fade-mask, var(--scroll-fade-block));
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.scroll-fade-x {
+  --_scroll-fade-size-s: var(--scroll-fade-s-size, var(--scroll-fade-size, min(12%, 2.5rem)));
+  --_scroll-fade-size-e: var(--scroll-fade-e-size, var(--scroll-fade-size, min(12%, 2.5rem)));
+  --scroll-fade-inline: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--scroll-fade-s, 0px),
+    #000 calc(100% - var(--scroll-fade-e, 0px)),
+    transparent 100%
+  );
+  -webkit-mask-image: var(--scroll-fade-mask, var(--scroll-fade-inline));
+  mask-image: var(--scroll-fade-mask, var(--scroll-fade-inline));
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+.scroll-fade-x:where([dir="rtl"], [dir="rtl"] *) {
+  --scroll-fade-inline: linear-gradient(
+    to left,
+    transparent 0,
+    #000 var(--scroll-fade-s, 0px),
+    #000 calc(100% - var(--scroll-fade-e, 0px)),
+    transparent 100%
+  );
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-fade-y {
+    animation:
+      scroll-fade-reveal-t 1ms ease-in-out,
+      scroll-fade-reveal-b 1ms ease-in-out;
+    animation-timeline: scroll(self y), scroll(self y);
+    animation-range:
+      0 var(--scroll-fade-reveal, 6rem),
+      calc(100% - var(--scroll-fade-reveal, 6rem)) 100%;
+    animation-fill-mode: both;
+  }
+
+  .scroll-fade-x {
+    animation:
+      scroll-fade-reveal-s 1ms ease-in-out,
+      scroll-fade-reveal-e 1ms ease-in-out;
+    animation-timeline: scroll(self inline), scroll(self inline);
+    animation-range:
+      0 var(--scroll-fade-reveal, 6rem),
+      calc(100% - var(--scroll-fade-reveal, 6rem)) 100%;
+    animation-fill-mode: both;
+  }
+
+  .scroll-fade-x.scroll-fade-y {
+    animation:
+      scroll-fade-reveal-t 1ms ease-in-out,
+      scroll-fade-reveal-b 1ms ease-in-out,
+      scroll-fade-reveal-s 1ms ease-in-out,
+      scroll-fade-reveal-e 1ms ease-in-out;
+    animation-timeline: scroll(self y), scroll(self y), scroll(self inline), scroll(self inline);
+    animation-range:
+      0 var(--scroll-fade-reveal, 6rem),
+      calc(100% - var(--scroll-fade-reveal, 6rem)) 100%,
+      0 var(--scroll-fade-reveal, 6rem),
+      calc(100% - var(--scroll-fade-reveal, 6rem)) 100%;
+    animation-fill-mode: both;
+  }
+}
+
+@supports not (animation-timeline: scroll()) {
+  .scroll-fade-y {
+    --scroll-fade-t: var(--_scroll-fade-size-t);
+    --scroll-fade-b: var(--_scroll-fade-size-b);
+  }
+
+  .scroll-fade-x {
+    --scroll-fade-s: var(--_scroll-fade-size-s);
+    --scroll-fade-e: var(--_scroll-fade-size-e);
+  }
+}
+
+.scroll-fade-x.scroll-fade-y {
+  -webkit-mask-image: var(--scroll-fade-block), var(--scroll-fade-inline);
+  mask-image: var(--scroll-fade-block), var(--scroll-fade-inline);
+}
+
+[data-variant="outline"][aria-haspopup][aria-expanded="true"],
+[data-variant="ghost"][aria-haspopup][aria-expanded="true"],
+[data-variant="secondary"][aria-haspopup][aria-expanded="true"] {
+  background-color: var(--carbon-menu-open-bg);
+  color: var(--carbon-menu-open-fg);
+}
+
+[data-sidebar="menu-button"][aria-haspopup][aria-expanded="true"] {
+  background-color: var(--carbon-menu-open-bg);
+  color: var(--carbon-menu-open-fg);
+}
+
+[data-sidebar="menu-action"][aria-expanded="true"] {
+  opacity: 1;
+}
+
+:where([data-slot="combobox-clear"] ~ [data-slot="combobox-trigger"]) {
+  display: none;
+}
+
+[data-slot="drawer-overlay"][data-swiping] {
+  transition-duration: 0s;
+}
+
+:is([data-slot="drawer-popup"], [data-slot="drawer-overlay"])[data-ending-style] {
+  transition-duration: calc(var(--drawer-swipe-strength) * 400ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is([data-slot="drawer-popup"], [data-slot="drawer-overlay"])[data-ending-style] {
+    transition-duration: 0s;
+  }
+}
+
+:where([data-slot="alert"]) > svg {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  margin-inline-end: 0.75rem;
+  translate: 0 0.125rem;
+  color: var(--carbon-alert-accent);
+}
+
+:where([data-slot="alert-title"], [data-slot="alert-description"], [data-slot="marker-content"]) a {
+  text-decoration-line: underline;
+  text-underline-offset: 3px;
+}
+
+:where([data-slot="alert-title"], [data-slot="alert-description"], [data-slot="marker-content"])
+  a:hover {
+  color: var(--foreground);
+}
+
+:where([data-slot="alert-description"]) p:not(:last-child) {
+  margin-block-end: 1rem;
+}
+
+:where([data-slot="card"]) > img:first-child {
+  margin-block-start: calc(-1 * var(--carbon-card-spacing));
+}
+
+:where(.carbon-icons) svg {
+  width: var(--carbon-icon-size, 1rem);
+  height: var(--carbon-icon-size, 1rem);
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+:where([data-slot="field-description"]) a {
+  text-decoration-line: underline;
+  text-underline-offset: 4px;
+}
+
+:where([data-slot="field-description"]) a:hover {
+  color: var(--primary);
+}
+
+:where([data-slot="resizable-handle"]:is([data-separator="hover"], [data-separator="active"])) {
+  color: var(--ring);
+}
+
+:where([data-slot="attachment-media"][data-variant="image"]) > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

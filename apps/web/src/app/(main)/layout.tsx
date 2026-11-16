@@ -1,26 +1,42 @@
-import { SidebarContent } from "@/components/sidebar"
-import { Navbar } from "@/components/navbar"
+import * as stylex from "@stylexjs/stylex"
+import { withClass } from "@/lib/with-class"
+import { breakpoints } from "@ui/theme/breakpoints.stylex"
+import { space } from "@ui/theme/tokens.stylex"
+import { SidebarNav } from "@/components/docs/sidebar-nav"
+import { SiteHeader } from "@/components/site-header"
+import { getSearchPages } from "@/lib/search"
+import { shell, shellLayer } from "@/styles/shell.stylex"
 
-export default function MainLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+const styles = stylex.create({
+  rail: {
+    display: { default: "none", [breakpoints.md]: "block" },
+    position: "fixed",
+    top: shell.headerHeight,
+    bottom: 0,
+    insetInlineStart: 0,
+    zIndex: shellLayer.rail,
+    width: shell.sidebarWidth,
+    overflowY: "auto",
+    paddingBlock: space.s6,
+    paddingInline: space.s3,
+    borderInlineEndWidth: 1,
+    borderInlineEndStyle: "solid",
+  },
+  main: {
+    minWidth: 0,
+    paddingTop: shell.headerHeight,
+    paddingInlineStart: { default: 0, [breakpoints.md]: shell.sidebarWidth },
+  },
+})
+
+export default function DocsLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-dvh overflow-hidden p-(--gutter) box-border bg-doc-background dark:bg-background">
-      <div className="h-full min-w-0 overflow-hidden lg:rounded-xl border bg-background dark:bg-doc-background flex flex-col">
-        <header className="shrink-0 w-full bg-background dark:bg-doc-background z-50 flex items-center">
-          <Navbar />
-        </header>
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <aside className="relative z-30 hidden h-full w-(--sidebar-width) shrink-0 overflow-y-auto md:block border-r border-grid no-scrollbar">
-            <SidebarContent />
-          </aside>
-          <main className="h-full min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
-            {children}
-          </main>
-        </div>
-      </div>
-    </div>
+    <>
+      <SiteHeader pages={getSearchPages()} />
+      <aside {...withClass("no-scrollbar", styles.rail)}>
+        <SidebarNav />
+      </aside>
+      <main {...stylex.props(styles.main)}>{children}</main>
+    </>
   )
 }

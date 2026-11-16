@@ -1,0 +1,20 @@
+@import "@siws/ui/mdx.css";
+
+.highlights code span {
+  color: light-dark(var(--shiki-light), var(--shiki-dark));
+  font-style: var(--shiki-light-font-style, normal);
+}
+
+.dark .highlights code span {
+  font-style: var(--shiki-dark-font-style, normal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) .highlights code span {
+    font-style: var(--shiki-dark-font-style, normal);
+  }
+}
+
+.highlights .line > span:empty {
+  display: inline;
+}

@@ -58,17 +58,16 @@ export default defineConfig({
       [
         rehypePrettyCode,
         {
-          theme: { dark: "houston", light: "github-light" },
+          theme: { dark: "github-dark", light: "github-light" },
+          defaultLang: { block: "plaintext", inline: "plaintext" },
           onVisitLine(node: LineElement) {
-            if (node.children.length === 0) {
-              node.children = [{ type: "text", value: " " }]
-            }
+            node.properties.className = ["line"]
           },
           onVisitHighlightedLine(node: LineElement) {
-            node.properties.className?.push("line--highlighted")
+            node.properties.className?.push("highlighted")
           },
           onVisitHighlightedWord(node: LineElement) {
-            node.properties.className = ["word--highlighted"]
+            node.properties.className = ["highlighted-word"]
           },
         },
       ],

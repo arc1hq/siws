@@ -1,14 +1,109 @@
-import { docs } from "#site/content"
-import { MDXContentRenderer } from "@/components/mdx/renderer"
-import { TableOfContents } from "@/components/mdx/toc"
-import { PageFooter } from "@/components/page-footer"
-import { PageHeader } from "@/components/page-header"
-import { PageNavigation } from "@/components/page-navigation"
-import { TocPromoCard } from "@/components/toc-promo-card"
-import { getAdjacentPages } from "@/lib/get-adjacent-pages"
 import { notFound } from "next/navigation"
+import * as stylex from "@stylexjs/stylex"
+import { withClass } from "@/lib/with-class"
+import { PencilSimpleIcon } from "@phosphor-icons/react/dist/ssr/PencilSimple"
+import { breakpoints } from "@ui/theme/breakpoints.stylex"
+import { color, font, leading, space, text, tracking } from "@ui/theme/tokens.stylex"
+import { docs } from "#site/content"
+import { DocsPager } from "@/components/docs/pager"
+import { InstallCard } from "@/components/docs/install-card"
+import { PageActions } from "@/components/docs/page-actions"
+import { DocsToc } from "@/components/docs/toc"
+import { MDXContentRenderer } from "@/components/mdx/renderer"
+import { getAdjacentPages } from "@/lib/get-adjacent-pages"
+import { navSections } from "@/lib/nav-data"
+import { siteConfig } from "@/lib/site"
+import { accent, shell } from "@/styles/shell.stylex"
 
-async function getDocFromParams(slugParts: string[]) {
+const styles = stylex.create({
+  frame: {
+    display: "grid",
+    gridTemplateColumns: { default: "minmax(0, 1fr)", [breakpoints.xl]: "minmax(0, 1fr) 15rem" },
+    columnGap: space.s12,
+    maxWidth: "70rem",
+    marginInline: "auto",
+    paddingInline: { default: space.s5, [breakpoints.md]: space.s10 },
+    paddingBlockStart: { default: space.s8, [breakpoints.md]: space.s12 },
+    paddingBlockEnd: space.s16,
+  },
+  article: { minWidth: 0, maxWidth: "46rem", width: "100%", marginInline: "auto" },
+  header: {
+    display: "flex",
+    flexDirection: "column",
+    gap: space.s3,
+    paddingBlockEnd: space.s8,
+    marginBlockEnd: space.s8,
+    borderBlockEndWidth: 1,
+    borderBlockEndStyle: "solid",
+  },
+  topline: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.s4,
+    flexWrap: "wrap",
+  },
+  eyebrow: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: space.s2,
+    fontFamily: font.mono,
+    fontSize: "0.6875rem",
+    lineHeight: leading.xs,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    color: color.mutedForeground,
+  },
+  dot: { width: 6, height: 6, borderRadius: 9999, backgroundColor: accent.ink },
+  title: {
+    fontSize: { default: text.xl3, [breakpoints.md]: text.xl4 },
+    lineHeight: { default: leading.xl3, [breakpoints.md]: leading.xl4 },
+    fontWeight: 600,
+    letterSpacing: tracking.tight,
+    textWrap: "balance",
+  },
+  titleMono: { fontFamily: font.mono, letterSpacing: "-0.04em" },
+  excerpt: {
+    maxWidth: "40rem",
+    fontSize: text.lg,
+    lineHeight: leading.lg,
+    color: color.mutedForeground,
+    textWrap: "pretty",
+  },
+  aside: { display: { default: "none", [breakpoints.xl]: "block" } },
+  sticky: {
+    position: "sticky",
+    top: `calc(${shell.headerHeight} + ${space.s12})`,
+    display: "flex",
+    flexDirection: "column",
+    gap: space.s8,
+    maxHeight: `calc(100svh - ${shell.headerHeight} - ${space.s16})`,
+    overflowY: "auto",
+  },
+  footer: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: space.s4,
+    flexWrap: "wrap",
+    marginBlockStart: space.s10,
+    paddingBlockStart: space.s5,
+    borderBlockStartWidth: 1,
+    borderBlockStartStyle: "solid",
+    fontSize: text.xs,
+    lineHeight: leading.xs,
+    color: color.mutedForeground,
+  },
+  edit: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: space.s1_5,
+    color: { default: color.mutedForeground, ":hover": color.foreground },
+  },
+  editIcon: { width: space.s3_5, height: space.s3_5 },
+})
+
+function getDoc(slugParts: string[]) {
   const slug = slugParts.join("/")
   return docs.find((doc) => doc.slugAsParams === slug)
 }
@@ -17,60 +112,64 @@ export async function generateStaticParams() {
   return docs.map((doc) => ({ slug: doc.slugAsParams.split("/") }))
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string[] }>
-}) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params
-  const doc = await getDocFromParams(slug)
+  const doc = getDoc(slug)
   if (!doc) return {}
   return { title: doc.title, description: doc.excerpt }
 }
 
-export default async function DocPage({
-  params,
-}: {
-  params: Promise<{ slug: string[] }>
-}) {
+export default async function DocPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params
-  const doc = await getDocFromParams(slug)
+  const doc = getDoc(slug)
+  if (!doc || !doc.published) notFound()
 
-  if (!doc || !doc.published) {
-    notFound()
-  }
-
-  const currentPath = `/docs/${doc.slugAsParams}`
-  const { prev, next } = getAdjacentPages(currentPath)
+  const href = `/docs/${doc.slugAsParams}`
+  const { prev, next } = getAdjacentPages(href)
+  const section = navSections.find((s) => s.items.some((item) => item.href === href))?.title
   const editPath = `apps/web/content/docs/${doc.slugAsParams}.mdx`
 
   return (
-    <>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="mx-auto flex w-full max-w-2xl min-w-0 flex-1 flex-col gap-6 px-4 py-6 md:px-0 lg:py-10">
-          <PageHeader
-            title={doc.title}
-            excerpt={doc.excerpt}
-            rawContent={doc.raw}
-            prev={prev}
-            next={next}
-            markdownHref={`/docs/${doc.slugAsParams}.md`}
-          />
+    <div {...stylex.props(styles.frame)}>
+      <article {...stylex.props(styles.article)}>
+        <header {...stylex.props(styles.header)}>
+          <div {...stylex.props(styles.topline)}>
+            <span {...stylex.props(styles.eyebrow)}>
+              <span aria-hidden {...stylex.props(styles.dot)} />
+              {section ?? "Docs"}
+            </span>
+            <PageActions markdownHref={`${href}.md`} prev={prev} next={next} />
+          </div>
+          <h1 {...stylex.props(styles.title, doc.title.startsWith("@") && styles.titleMono)}>{doc.title}</h1>
+          {doc.excerpt && <p {...stylex.props(styles.excerpt)}>{doc.excerpt}</p>}
+        </header>
+
+        <div className="typeset typeset-docs">
           <MDXContentRenderer code={doc.body} />
-          <PageNavigation prev={prev} next={next} />
-          <PageFooter editPath={editPath} />
         </div>
-      </div>
-      <aside className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[calc(100svh-var(--header-height)-2rem)] w-(--sidebar-width) flex-col gap-8 overflow-x-hidden overflow-y-auto overscroll-none pb-8 px-3 pt-6 lg:pt-10 xl:flex">
-        {doc.showToc && doc.toc.length > 0 && (
-          <TableOfContents
-            toc={doc.toc}
-            markerVariant={doc.tocMarkerVariant}
-            size="sm"
-          />
-        )}
-        <TocPromoCard />
+
+        <DocsPager prev={prev} next={next} />
+
+        <footer {...stylex.props(styles.footer)}>
+          <a
+            href={`${siteConfig.links.github}/edit/main/${editPath}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            {...stylex.props(styles.edit)}
+          >
+            <PencilSimpleIcon aria-hidden {...stylex.props(styles.editIcon)} />
+            Edit this page on GitHub
+          </a>
+          <span>MIT licensed · SIWS v{siteConfig.version}</span>
+        </footer>
+      </article>
+
+      <aside {...stylex.props(styles.aside)}>
+        <div {...withClass("no-scrollbar", styles.sticky)}>
+          {doc.showToc && doc.toc.length > 0 && <DocsToc toc={doc.toc} />}
+          <InstallCard />
+        </div>
       </aside>
-    </>
+    </div>
   )
 }

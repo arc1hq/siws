@@ -4,28 +4,24 @@
   "private": true,
   "sideEffects": false,
   "exports": {
-    "./base.css": "./base.css",
-    "./shadcn/*": "./src/shadcn/*.tsx",
-    "./hooks/*": "./src/hooks/*.ts",
-    "./lib/*": "./src/lib/*.ts"
+    "./theme.css": "./theme.css",
+    "./interop.css": "./interop.css",
+    "./mdx.css": "./mdx.css",
+    "./base/*": "./src/base/*.tsx",
+    "./lib/*": "./src/lib/*.ts",
+    "./theme/*": "./src/theme/*.ts"
   },
   "scripts": {
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "^1.3.0",
-    "@tailwindcss/typography": "^0.5.16",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "cmdk": "^1.1.1",
-    "lucide-react": "^0.575.0",
-    "tailwind-merge": "^3.4.1",
-    "tailwindcss": "^4.1.18",
-    "tw-animate-css": "^1.3.4"
+    "@base-ui/react": "^1.9.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@stylexjs/stylex": "0.19.0",
+    "clsx": "^2.1.1"
   },
   "devDependencies": {
     "@siws/typescript-config": "workspace:*",
-    "@tailwindcss/postcss": "^4.1.18",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "react": "^19.2.4",
